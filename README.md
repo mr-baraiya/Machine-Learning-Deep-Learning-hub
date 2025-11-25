@@ -115,9 +115,13 @@ Prepare lab assignments and academic ML/DL projects
 ## Author
 
 **Vishal Baraiya**
+
 B.Tech CSE (3rd Year)
+
 Passionate ML/DL & Full-Stack Developer
+
 GitHub: *[https://github.com/mr-baraiya](https://github.com/mr-baraiya)*
+
 LinkedIn: *[https://linkedin.com/in/baraiya-vishalbhai](https://linkedin.com/in/baraiya-vishalbhai)*
 
 ---
