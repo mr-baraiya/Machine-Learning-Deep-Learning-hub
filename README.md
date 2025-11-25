@@ -7,10 +7,15 @@ A comprehensive repository containing **Machine Learning (ML) and Deep Learning 
 ## Repository Highlights
 
 ✔ Hands-on ML & DL experiments
+
 ✔ CNN, ANN, Classification & Regression models
+
 ✔ Preprocessing & data pipeline
+
 ✔ Evaluation metrics & result visualization
+
 ✔ Grad-CAM heatmap for model interpretability
+
 ✔ Contains both **basic and advanced lab work**
 
 ---
