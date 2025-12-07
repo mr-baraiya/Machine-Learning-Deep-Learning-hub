@@ -47,3 +47,4 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+Cardio_Project/Data/processed/clean_cardio.csv

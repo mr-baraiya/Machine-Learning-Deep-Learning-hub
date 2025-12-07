@@ -1,0 +1,17 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cardio Prediction</title>
+</head>
+<body>
+    <h2>Enter Patient Details</h2>
+    <form action="/predict" method="POST">
+        {% for col in ['age_years','height','weight','ap_hi','ap_lo','bmi','cholesterol','gluc','smoke','alco','active'] %}
+            <label>{{ col }}:</label>
+            <input type="number" step="any" name="{{ col }}" required><br><br>
+        {% endfor %}
+        <button type="submit">Predict</button>
+    </form>
+</body>
+</html>
