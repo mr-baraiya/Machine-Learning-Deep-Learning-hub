@@ -2,12 +2,180 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prediction Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            
+            const btn = document.getElementById('darkModeToggle');
+            btn.textContent = isDark ? '☀️' : '🌙';
+        }
+        
+        // Load dark mode preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                const btn = document.getElementById('darkModeToggle');
+                if (btn) btn.textContent = '☀️';
+            }
+        });
+    </script>
+    <style>
+        .result-container {
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .risk-badge {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 1.5s ease-out;
+            animation: fillProgress 1.5s ease-out;
+        }
+        
+        .progress-fill.high-risk {
+            background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .progress-fill.low-risk {
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+        }
+        
+        @keyframes fillProgress {
+            from {
+                width: 0;
+            }
+        }
+        
+        .confidence-meter {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .meter-value {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #6A11CB, #2575FC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
 </head>
 <body>
-    <h2>Prediction Result</h2>
-    <p>Risk Level: <b>{{ risk }}</b></p>
-    <p>Probability: <b>{{ probability }}%</b></p>
-    <a href="/">Go Back</a>
+    <button id="darkModeToggle" class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">🌙</button>
+    
+    <div class="container result-container">
+        <div class="result-box">
+            <h2>Prediction Result</h2>
+            
+            <div class="confidence-meter">
+                <div class="meter-value">{{ probability }}%</div>
+                <p style="color: #666; font-size: 1.1em;">Confidence Score</p>
+            </div>
+            
+            <div class="risk {% if 'High' in risk %}high-risk{% else %}low-risk{% endif %}">
+                <span class="risk-badge {% if 'High' in risk %}high-risk{% else %}low-risk{% endif %}">
+                    {{ risk }}
+                </span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill {% if 'High' in risk %}high-risk{% else %}low-risk{% endif %}" 
+                     style="width: {{ probability }}%;">
+                    {{ probability }}%
+                </div>
+            </div>
+            
+            <p style="text-align: center; color: #666; font-size: 0.95em; margin: 20px 0;">
+                {% if probability < 30 %}
+                    Your cardiovascular health indicators are in good range. Continue maintaining a healthy lifestyle!
+                {% elif probability < 50 %}
+                    Moderate risk detected. Consider consulting with a healthcare professional for preventive measures.
+                {% elif probability < 70 %}
+                    Elevated risk detected. We recommend scheduling a medical consultation soon.
+                {% else %}
+                    High risk detected. Please consult a healthcare professional for a comprehensive evaluation.
+                {% endif %}
+            </p>
+            
+            <div style="text-align: left; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #667eea;">Input Summary:</h3>
+                {% if input_data %}
+                <ul style="list-style: none; padding: 0;">
+                    <li><strong>Age:</strong> {{ input_data.age_years }} years</li>
+                    <li><strong>Height:</strong> {{ input_data.height }} cm</li>
+                    <li><strong>Weight:</strong> {{ input_data.weight }} kg</li>
+                    <li><strong>BMI:</strong> {{ input_data.bmi }}</li>
+                    <li><strong>Blood Pressure:</strong> {{ input_data.ap_hi }}/{{ input_data.ap_lo }} mmHg</li>
+                    <li><strong>Cholesterol:</strong> {{ input_data.cholesterol }}</li>
+                    <li><strong>Glucose:</strong> {{ input_data.gluc }}</li>
+                    <li><strong>Smoking:</strong> {{ 'Yes' if input_data.smoke == 1 else 'No' }}</li>
+                    <li><strong>Alcohol:</strong> {{ 'Yes' if input_data.alco == 1 else 'No' }}</li>
+                    <li><strong>Physical Activity:</strong> {{ 'Yes' if input_data.active == 1 else 'No' }}</li>
+                </ul>
+                {% endif %}
+            </div>
+            
+            <a href="/" class="back-link">← Make Another Prediction</a>
+            
+            <div style="text-align: center; margin-top: 40px; padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
+                <p style="margin: 0; color: #856404; font-size: 0.9em;">
+                    <strong>Medical Disclaimer:</strong> This tool provides risk estimates based on statistical models and is NOT a medical diagnosis. 
+                    Always consult a qualified healthcare professional for accurate medical evaluation and advice.
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
