@@ -9,8 +9,14 @@
 This project predicts the risk of **Cardiovascular Disease** using patient health parameters such as age, blood pressure, cholesterol, BMI, and lifestyle habits. The ML model (Logistic Regression) is implemented **from scratch using NumPy**, and deployed using a **Flask Web Application** with a modern, responsive UI.
 
 ---
+## Live Demo
 
-## 🚀 Features
+👉 **Try it here:** https://cardio-project.onrender.com/
+
+[![Open App](https://img.shields.io/badge/OPEN%20LIVE%20APP-Blue?style=for-the-badge&logo=google-chrome)](https://cardio-project.onrender.com/)
+
+---
+## Features
 
 - ✅ **Logistic Regression implemented from scratch** (No sklearn for training)
 - ✅ **Interactive Web UI** with real-time validation and user-friendly design
@@ -65,7 +71,7 @@ Cardio_Project/
 
 ---
 
-## 🧠 Machine Learning Workflow
+## Machine Learning Workflow
 
 ### **Week 1 – Data Exploration**
 - Loaded the Kaggle Cardiovascular Disease dataset
@@ -403,7 +409,7 @@ This project is open source and available under the [MIT License](LICENSE).
 **Vishal Baraiya**
 - GitHub: [@mr-baraiya](https://github.com/mr-baraiya)
 - Project Repository: [Cardio_Project](https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/tree/main/Cardio_Project)
-- LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)
+- LinkedIn: [Linkedin Profile](https://www.linkedin.com/in/baraiya-vishalbhai)
 
 ---
 
