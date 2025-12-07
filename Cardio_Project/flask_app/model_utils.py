@@ -10,9 +10,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Load model artifacts with error handling
 try:
-    weights = np.load(os.path.join(BASE_DIR, "../models/logistic_weights.npy"))
-    bias = np.load(os.path.join(BASE_DIR, "../models/logistic_bias.npy"))
-    scaler = joblib.load(os.path.join(BASE_DIR, "../models/scaler.pkl"))
+    weights = np.load(os.path.join(BASE_DIR, "models/logistic_weights.npy"))
+    bias = np.load(os.path.join(BASE_DIR, "models/logistic_bias.npy"))
+    scaler = joblib.load(os.path.join(BASE_DIR, "models/scaler.pkl"))
     logger.info("Model artifacts loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load model artifacts: {str(e)}")
