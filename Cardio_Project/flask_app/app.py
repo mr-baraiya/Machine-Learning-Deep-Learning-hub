@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template, request, jsonify
-from model_utils import predict_cardio
+from model_utils import predict_cardio, calculate_bmi
 import logging
 
 app = Flask(__name__)
@@ -31,8 +31,7 @@ def predict():
                 raise ValueError(f"Invalid value for {key}: must be a number")
         
         # Calculate BMI from height (cm) and weight (kg)
-        height_m = input_data['height'] / 100  # Convert cm to meters
-        input_data['bmi'] = input_data['weight'] / (height_m ** 2)
+        input_data['bmi'] = calculate_bmi(input_data['height'], input_data['weight'])
         
         # Make prediction
         label, proba = predict_cardio(input_data)
