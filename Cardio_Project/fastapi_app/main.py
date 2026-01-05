@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
 import joblib
-from typing import Literal
+import os
+import requests
 
 app = FastAPI(title="Cardiovascular Disease Prediction API")
 
@@ -16,22 +17,81 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load models and scalers
-try:
-    # Load Logistic Regression weights and bias
-    lr_weights = np.load("models/logistic_weights.npy")
-    lr_bias = np.load("models/logistic_bias.npy")
+# Model files configuration
+MODEL_DIR = "models"
+MODEL_FILES = {
+    "random_forest_model.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/random_forest_model.pkl",
+    "scaler_int.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/scaler_int.pkl",
+    "scaler_num.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/scaler_num.pkl",
+    "logistic_weights.npy": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/logistic_weights.npy",
+    "logistic_bias.npy": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/logistic_bias.npy",
+}
+
+# Global variables for models
+rf_model = None
+scaler_num = None
+scaler_int = None
+lr_weights = None
+lr_bias = None
+
+def download_model_file(filename: str, url: str):
+    """Download a model file if it doesn't exist"""
+    filepath = os.path.join(MODEL_DIR, filename)
     
-    # Load Random Forest model
-    rf_model = joblib.load("models/random_forest_model.pkl")
+    if os.path.exists(filepath):
+        print(f"[OK] {filename} already exists")
+        return True
     
-    # Load scalers
-    scaler_num = joblib.load("models/scaler_num.pkl")
-    scaler_int = joblib.load("models/scaler_int.pkl")
+    print(f"[DOWNLOAD] Downloading {filename}...")
+    try:
+        response = requests.get(url, stream=True, timeout=300)
+        response.raise_for_status()
+        
+        # Create models directory if it doesn't exist
+        os.makedirs(MODEL_DIR, exist_ok=True)
+        
+        # Download with progress
+        total_size = int(response.headers.get('content-length', 0))
+        with open(filepath, 'wb') as f:
+            if total_size == 0:
+                f.write(response.content)
+            else:
+                downloaded = 0
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+        
+        print(f"[OK] {filename} downloaded successfully")
+        return True
+    except Exception as e:
+        print(f"[WARNING] Could not download {filename}: {e}")
+        return False
+
+@app.on_event("startup")
+async def load_models():
+    """Download and load models on startup"""
+    global rf_model, scaler_num, scaler_int, lr_weights, lr_bias
     
-    print("✓ All models loaded successfully!")
-except Exception as e:
-    print(f"Error loading models: {e}")
+    try:
+        # Try to download models if needed (optional - uses local if available)
+        print("\n[CHECKING] Checking model files...")
+        for filename, url in MODEL_FILES.items():
+            download_model_file(filename, url)
+        
+        # Load all models from local directory
+        print("\n[LOADING] Loading models...")
+        rf_model = joblib.load(os.path.join(MODEL_DIR, "random_forest_model.pkl"))
+        scaler_num = joblib.load(os.path.join(MODEL_DIR, "scaler_num.pkl"))
+        scaler_int = joblib.load(os.path.join(MODEL_DIR, "scaler_int.pkl"))
+        lr_weights = np.load(os.path.join(MODEL_DIR, "logistic_weights.npy"))
+        lr_bias = np.load(os.path.join(MODEL_DIR, "logistic_bias.npy"))
+        
+        print("[SUCCESS] All models loaded successfully!\n")
+        
+    except Exception as e:
+        print(f"[ERROR] Error loading models: {e}")
+        raise
 
 class PatientData(BaseModel):
     age: float
@@ -107,7 +167,19 @@ def root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "models_loaded": True}
+    models_loaded = all([
+        rf_model is not None,
+        scaler_num is not None,
+        scaler_int is not None,
+        lr_weights is not None,
+        lr_bias is not None
+    ])
+    
+    return {
+        "status": "healthy" if models_loaded else "unhealthy",
+        "models_loaded": models_loaded,
+        "model_directory": MODEL_DIR
+    }
 
 @app.post("/predict/logistic", response_model=PredictionResponse)
 def predict_logistic(data: PatientData):
