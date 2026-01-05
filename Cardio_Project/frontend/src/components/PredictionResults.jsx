@@ -5,7 +5,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import CompareChart from './CompareChart';
 
-function PredictionResults({ predictions, onReset }) {
+function PredictionResults({ predictions, onReset, personalDetails = {} }) {
   const { logistic_regression, random_forest, recommendation } = predictions;
 
   const getRiskColor = (riskLevel) => {
@@ -30,14 +30,39 @@ function PredictionResults({ predictions, onReset }) {
     // Reset text color
     doc.setTextColor(0, 0, 0);
 
+    let yPos = 50;
+    
     // Date
     doc.setFontSize(10);
-    doc.text(`Report Date: ${date}`, 14, 50);
+    doc.text(`Report Date: ${date}`, 14, yPos);
+    yPos += 10;
+    
+    // Personal Details Section
+    if (personalDetails.name || personalDetails.email || personalDetails.mobile || personalDetails.address) {
+      doc.setFontSize(16);
+      doc.text('Patient Information', 14, yPos);
+      
+      autoTable(doc, {
+        startY: yPos + 5,
+        head: [['Field', 'Details']],
+        body: [
+          ['Name', personalDetails.name || 'N/A'],
+          ['Email', personalDetails.email || 'N/A'],
+          ['Mobile', personalDetails.mobile || 'N/A'],
+          ['Address', personalDetails.address || 'N/A']
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [139, 92, 246] },
+        margin: { left: 14 },
+      });
+      
+      yPos = doc.lastAutoTable.finalY + 15;
+    }
 
     // Random Forest Results
     doc.setFontSize(16);
     doc.setTextColor(22, 163, 74);
-    doc.text('Random Forest Model', 14, 65);
+    doc.text('Random Forest Model', 14, yPos);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(11);
 
@@ -48,7 +73,7 @@ function PredictionResults({ predictions, onReset }) {
     ];
 
     autoTable(doc, {
-      startY: 70,
+      startY: yPos + 5,
       head: [['Metric', 'Value']],
       body: rfData,
       theme: 'grid',

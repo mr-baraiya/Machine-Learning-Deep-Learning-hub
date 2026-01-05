@@ -2,9 +2,25 @@ import os
 import requests
 import joblib
 import numpy as np
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from datetime import datetime
+from io import BytesIO
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
+# Load environment variables
+load_dotenv()
 
 # --------------------------------------------------
 # CONFIG
@@ -98,6 +114,15 @@ class PatientData(BaseModel):
     smoke: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
     alco: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
     active: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
+
+
+class EmailReportRequest(BaseModel):
+    """Request schema for sending email reports"""
+    to_email: EmailStr = Field(..., description="Recipient email address")
+    patient_name: str = Field(..., min_length=1, description="Patient full name")
+    patient_data: PatientData = Field(..., description="Patient health data")
+    model_type: str = Field(..., description="Model type: randomforest, logistic, or compare")
+    prediction_result: dict = Field(..., description="Prediction result from model")
 
 # --------------------------------------------------
 # LOAD MODELS ON STARTUP
@@ -223,6 +248,345 @@ def compare_models(data: PatientData):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --------------------------------------------------
+# PDF GENERATION UTILITY
+# --------------------------------------------------
+
+def generate_pdf_report(patient_name: str, patient_data: PatientData, 
+                       model_type: str, prediction_result: dict) -> BytesIO:
+    """
+    Generate a professional PDF report for cardiovascular disease prediction
+    
+    Args:
+        patient_name: Patient's full name
+        patient_data: Patient health metrics
+        model_type: Type of model used (randomforest, logistic, compare)
+        prediction_result: Prediction results from the model
+    
+    Returns:
+        BytesIO: PDF file in memory
+    """
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, 
+                           rightMargin=72, leftMargin=72,
+                           topMargin=72, bottomMargin=18)
+    
+    # Container for PDF elements
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#4A148C'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#6A1B9A'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    
+    # Title
+    title = Paragraph("CardioSense Health Report", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Report metadata
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    meta_data = [
+        ["Report Date:", timestamp],
+        ["Patient Name:", patient_name],
+        ["Model Type:", model_type.replace("_", " ").title()],
+    ]
+    
+    meta_table = Table(meta_data, colWidths=[2*inch, 4*inch])
+    meta_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(meta_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Patient Information Section
+    elements.append(Paragraph("Patient Health Metrics", heading_style))
+    
+    bmi = patient_data.weight / ((patient_data.height / 100) ** 2)
+    
+    patient_info = [
+        ["Metric", "Value"],
+        ["Age", f"{patient_data.age} years"],
+        ["Gender", "Male" if patient_data.gender == 2 else "Female"],
+        ["Height", f"{patient_data.height} cm"],
+        ["Weight", f"{patient_data.weight} kg"],
+        ["BMI", f"{bmi:.2f}"],
+        ["Systolic BP", f"{patient_data.ap_hi} mmHg"],
+        ["Diastolic BP", f"{patient_data.ap_lo} mmHg"],
+        ["Cholesterol", ["Normal", "Above Normal", "Well Above Normal"][patient_data.cholesterol-1]],
+        ["Glucose", ["Normal", "Above Normal", "Well Above Normal"][patient_data.gluc-1]],
+        ["Smoking", "Yes" if patient_data.smoke else "No"],
+        ["Alcohol", "Yes" if patient_data.alco else "No"],
+        ["Physical Activity", "Yes" if patient_data.active else "No"],
+    ]
+    
+    patient_table = Table(patient_info, colWidths=[2.5*inch, 3.5*inch])
+    patient_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6A1B9A')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F3E5F5')]),
+    ]))
+    elements.append(patient_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Prediction Results Section
+    elements.append(Paragraph("Prediction Results", heading_style))
+    
+    if model_type == "compare":
+        # Compare mode - show both models
+        rf_result = prediction_result.get("random_forest", {})
+        lr_result = prediction_result.get("logistic_regression", {})
+        
+        results_data = [
+            ["Model", "Prediction", "Probability", "Risk Level"],
+            ["Random Forest", 
+             "CVD Risk" if rf_result.get("prediction") == 1 else "No CVD Risk",
+             f"{rf_result.get('probability', 0)*100:.2f}%",
+             rf_result.get("risk", "N/A")],
+            ["Logistic Regression",
+             "CVD Risk" if lr_result.get("prediction") == 1 else "No CVD Risk",
+             f"{lr_result.get('probability', 0)*100:.2f}%",
+             lr_result.get("risk", "N/A")],
+        ]
+    else:
+        # Single model mode
+        results_data = [
+            ["Metric", "Value"],
+            ["Model", prediction_result.get("model", "N/A")],
+            ["Prediction", "CVD Risk Detected" if prediction_result.get("prediction") == 1 else "No CVD Risk"],
+            ["Probability", f"{prediction_result.get('probability', 0)*100:.2f}%"],
+            ["Risk Level", prediction_result.get("risk", "N/A")],
+        ]
+    
+    results_table = Table(results_data, colWidths=[2*inch, 1.5*inch, 1.5*inch, 1.5*inch] if model_type == "compare" else [2.5*inch, 3.5*inch])
+    
+    table_style = [
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D32F2F') if prediction_result.get("prediction") == 1 else colors.HexColor('#388E3C')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+    ]
+    
+    results_table.setStyle(TableStyle(table_style))
+    elements.append(results_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Recommendations Section
+    elements.append(Paragraph("Medical Recommendations", heading_style))
+    
+    if prediction_result.get("prediction") == 1:
+        recommendations = [
+            "• Consult a cardiologist for comprehensive evaluation",
+            "• Monitor blood pressure and cholesterol regularly",
+            "• Adopt a heart-healthy diet low in sodium and saturated fats",
+            "• Engage in regular physical activity (150 minutes/week)",
+            "• Consider stress management techniques",
+            "• Follow prescribed medication regimen if applicable",
+        ]
+    else:
+        recommendations = [
+            "• Maintain current healthy lifestyle habits",
+            "• Schedule regular annual cardiovascular check-ups",
+            "• Continue balanced diet and physical activity",
+            "• Monitor blood pressure periodically",
+            "• Stay informed about cardiovascular health",
+        ]
+    
+    for rec in recommendations:
+        elements.append(Paragraph(rec, styles['Normal']))
+        elements.append(Spacer(1, 0.1*inch))
+    
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Disclaimer
+    disclaimer_style = ParagraphStyle(
+        'Disclaimer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#D32F2F'),
+        leftIndent=20,
+        rightIndent=20,
+        spaceAfter=10,
+    )
+    
+    disclaimer_text = "<b>Medical Disclaimer:</b> This report is generated by an AI-based educational tool and should NOT be used for medical diagnosis. Always consult qualified healthcare professionals for medical advice, diagnosis, or treatment."
+    elements.append(Paragraph(disclaimer_text, disclaimer_style))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.grey,
+        alignment=TA_CENTER,
+    )
+    elements.append(Spacer(1, 0.2*inch))
+    elements.append(Paragraph("Generated by CardioSense | Machine Learning Prediction System", footer_style))
+    
+    # Build PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+# --------------------------------------------------
+# SMTP EMAIL UTILITY
+# --------------------------------------------------
+
+def send_email_with_attachment(to_email: str, patient_name: str, 
+                               pdf_buffer: BytesIO, risk_level: str) -> bool:
+    """
+    Send email with PDF report attachment using SMTP
+    
+    Args:
+        to_email: Recipient email address
+        patient_name: Patient name
+        pdf_buffer: PDF file buffer
+        risk_level: Risk assessment result
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    # Get SMTP credentials from environment variables
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    smtp_from = os.getenv("SMTP_FROM", smtp_user)
+    
+    # Validate SMTP configuration
+    if not smtp_user or not smtp_password:
+        raise ValueError("SMTP credentials not configured in environment variables")
+    
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = f"CardioSense Support <{smtp_from}>"
+        msg['To'] = to_email
+        msg['Subject'] = f"CardioSense Health Report - {patient_name}"
+        
+        # Email body
+        body = f"""
+Dear {patient_name},
+
+Thank you for using CardioSense cardiovascular disease prediction system.
+
+Your health assessment report is attached to this email. Please review the results and recommendations carefully.
+
+Assessment Summary:
+- Risk Level: {risk_level}
+- Report Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+IMPORTANT: This is an AI-generated educational report and should NOT be used for medical diagnosis. 
+Please consult with qualified healthcare professionals for proper medical evaluation and treatment.
+
+Best regards,
+CardioSense Team
+
+---
+This is an automated message. Please do not reply to this email.
+"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach PDF
+        pdf_attachment = MIMEApplication(pdf_buffer.read(), _subtype="pdf")
+        pdf_attachment.add_header('Content-Disposition', 'attachment', 
+                                 filename=f"CardioSense_Report_{patient_name.replace(' ', '_')}.pdf")
+        msg.attach(pdf_attachment)
+        
+        # Send email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+        
+        print(f"[EMAIL] Successfully sent report to {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send email: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+
+# --------------------------------------------------
+# EMAIL REPORT ENDPOINT
+# --------------------------------------------------
+
+@app.post("/send-report")
+def send_report(request: EmailReportRequest):
+    """
+    Generate PDF report and send via email
+    
+    This endpoint:
+    1. Generates a professional PDF report with patient data and predictions
+    2. Sends the report via SMTP email with secure credentials
+    3. Returns confirmation of delivery
+    """
+    try:
+        # Extract risk level from prediction result
+        if request.model_type == "compare":
+            risk_level = request.prediction_result.get("random_forest", {}).get("risk", "Unknown")
+        else:
+            risk_level = request.prediction_result.get("risk", "Unknown")
+        
+        # Generate PDF report
+        pdf_buffer = generate_pdf_report(
+            patient_name=request.patient_name,
+            patient_data=request.patient_data,
+            model_type=request.model_type,
+            prediction_result=request.prediction_result
+        )
+        
+        # Send email with PDF attachment
+        send_email_with_attachment(
+            to_email=request.to_email,
+            patient_name=request.patient_name,
+            pdf_buffer=pdf_buffer,
+            risk_level=risk_level
+        )
+        
+        return {
+            "status": "success",
+            "message": f"Report successfully sent to {request.to_email}",
+            "timestamp": datetime.now().isoformat(),
+            "recipient": request.to_email,
+            "patient_name": request.patient_name,
+            "risk_level": risk_level
+        }
+        
+    except ValueError as ve:
+        raise HTTPException(status_code=500, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send report: {str(e)}")
 
 
 # --------------------------------------------------

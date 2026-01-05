@@ -4,7 +4,9 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Predict from './pages/Predict';
-import Results from './pages/Results';
+import ResultsCompare from './pages/ResultsCompare';
+import ResultsLogistic from './pages/ResultsLogistic';
+import ResultsRandomForest from './pages/ResultsRandomForest';
 import About from './pages/About';
 import Disclaimer from './pages/Disclaimer';
 import Contact from './pages/Contact';
@@ -31,7 +33,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/predict" element={<Predict />} />
-          <Route path="/results" element={<Results />} />
+          <Route path="/results/compare" element={<ResultsCompare />} />
+          <Route path="/results/logistic" element={<ResultsLogistic />} />
+          <Route path="/results/randomforest" element={<ResultsRandomForest />} />
           <Route path="/about" element={<About />} />
           <Route path="/models" element={<ModelInfo />} />
           <Route path="/faqs" element={<FAQs />} />

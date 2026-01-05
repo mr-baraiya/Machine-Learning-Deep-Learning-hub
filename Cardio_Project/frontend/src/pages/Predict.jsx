@@ -9,7 +9,7 @@ function Predict() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handlePredict = async (patientData, selectedModel) => {
+  const handlePredict = async (patientData, selectedModel, personalDetails) => {
     setLoading(true);
     setError(null);
 
@@ -17,6 +17,7 @@ function Predict() {
       console.log('=== PREDICTION REQUEST START ===');
       console.log('Sending patient data:', JSON.stringify(patientData, null, 2));
       console.log('Selected model:', selectedModel);
+      console.log('Personal details:', personalDetails);
       
       let data;
       let resultRoute;
@@ -26,7 +27,7 @@ function Predict() {
         console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/logistic');
         data = await predictLogistic(patientData);
         resultRoute = '/results/logistic';
-      } else if (selectedModel === 'randomforest') {
+      } else if (selectedModel === 'random_forest') {
         console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/randomforest');
         data = await predictRandomForest(patientData);
         resultRoute = '/results/randomforest';
@@ -40,8 +41,15 @@ function Predict() {
       console.log('=== PREDICTION REQUEST SUCCESS ===');
       console.log('Received predictions:', JSON.stringify(data, null, 2));
       
-      // Navigate to appropriate results page with prediction data
-      navigate(resultRoute, { state: { predictions: data, model: selectedModel } });
+      // Navigate to appropriate results page with prediction data, personal details, and patient data
+      navigate(resultRoute, { 
+        state: { 
+          predictions: data, 
+          model: selectedModel, 
+          personalDetails,
+          patientData  // Pass original patient data for backend email
+        } 
+      });
     } catch (err) {
       console.error('=== PREDICTION REQUEST FAILED ===');
       console.error('Error:', err);
@@ -87,50 +95,6 @@ function Predict() {
                     />
                   </svg>
                   <p className="font-medium">{error}</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            {loading && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-200 p-12"
-              >
-                <div className="flex flex-col items-center justify-center">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full"
-                  />
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-6 text-gray-900 text-2xl font-bold"
-                  >
-                    Analyzing Patient Data...
-                  </motion.p>
-                  <p className="mt-2 text-gray-600">
-                    Processing with machine learning models
-                  </p>
-                  <motion.div className="flex gap-2 mt-6">
-                    {[0, 1, 2].map((i) => (
-                      <motion.div
-                        key={i}
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          delay: i * 0.2,
-                        }}
-                        className="w-3 h-3 bg-blue-600 rounded-full"
-                      />
-                    ))}
-                  </motion.div>
                 </div>
               </motion.div>
             )}

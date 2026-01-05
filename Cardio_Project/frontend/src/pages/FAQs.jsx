@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
-function FAQItem({ question, answer }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+function FAQItem({ question, answer, isOpen, onToggle }) {
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition"
       >
         <span className="font-semibold text-gray-900 text-left">{question}</span>
@@ -27,6 +25,8 @@ function FAQItem({ question, answer }) {
 }
 
 function FAQs() {
+  const [openIndex, setOpenIndex] = useState(null);
+
   const faqs = [
     {
       question: "What is CardioSense?",
@@ -105,7 +105,13 @@ function FAQs() {
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <FAQItem key={index} question={faq.question} answer={faq.answer} />
+            <FAQItem 
+              key={index} 
+              question={faq.question} 
+              answer={faq.answer}
+              isOpen={openIndex === index}
+              onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+            />
           ))}
         </div>
 

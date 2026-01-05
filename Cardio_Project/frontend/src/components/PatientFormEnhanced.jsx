@@ -16,6 +16,13 @@ function PatientFormEnhanced({ onSubmit, loading }) {
     active: '1',
   });
 
+  const [personalDetails, setPersonalDetails] = useState({
+    name: '',
+    email: '',
+    mobile: '',
+    address: '',
+  });
+
   const [selectedModel, setSelectedModel] = useState('both');
   const [errors, setErrors] = useState({});
 
@@ -46,6 +53,13 @@ function PatientFormEnhanced({ onSubmit, loading }) {
       alco: '0',
       active: '1',
     },
+  };
+
+  const demoPersonalDetails = {
+    name: 'John Doe',
+    email: 'baraiyavishalbhai32@gmail.com',
+    mobile: '+1 (555) 123-4567',
+    address: '123 Main Street, New York, NY 10001',
   };
 
   const validateField = (name, value) => {
@@ -102,11 +116,32 @@ function PatientFormEnhanced({ onSubmit, loading }) {
 
   const handleDemoFill = (riskType) => {
     setFormData(demoData[riskType]);
+    setPersonalDetails(demoPersonalDetails);
     setErrors({});
+  };
+
+  const handlePersonalChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if all required fields are filled
+    if (!formData.age || !formData.height || !formData.weight || !formData.ap_hi || !formData.ap_lo) {
+      const newErrors = {};
+      if (!formData.age) newErrors.age = 'Age is required';
+      if (!formData.height) newErrors.height = 'Height is required';
+      if (!formData.weight) newErrors.weight = 'Weight is required';
+      if (!formData.ap_hi) newErrors.ap_hi = 'Systolic blood pressure is required';
+      if (!formData.ap_lo) newErrors.ap_lo = 'Diastolic blood pressure is required';
+      setErrors(newErrors);
+      return;
+    }
     
     const processedData = {
       age: parseFloat(formData.age),
@@ -122,7 +157,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
       active: parseInt(formData.active),
     };
 
-    onSubmit(processedData, selectedModel);
+    onSubmit(processedData, selectedModel, personalDetails);
   };
 
   return (
@@ -154,7 +189,66 @@ function PatientFormEnhanced({ onSubmit, loading }) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        {/* Personal Details */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Personal Details (For Report Only)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={personalDetails.name}
+                onChange={handlePersonalChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={personalDetails.email}
+                onChange={handlePersonalChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                placeholder="john@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                name="mobile"
+                value={personalDetails.mobile}
+                onChange={handlePersonalChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={personalDetails.address}
+                onChange={handlePersonalChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                placeholder="123 Main Street, City, State ZIP"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Basic Information */}
         <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h3>
@@ -170,11 +264,10 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                   name="age"
                   value={formData.age}
                   onChange={handleChange}
-                  required
                   min="1"
                   max="120"
                   placeholder="35"
-                  className="w-full px-4 py-3 pr-20 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  className="w-full px-4 py-3 pr-20 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition cursor-text"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">
                   years
@@ -197,7 +290,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: '1' })}
-                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all ${
+                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all cursor-pointer ${
                     formData.gender === '1'
                       ? 'bg-blue-500 text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -208,7 +301,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: '2' })}
-                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all ${
+                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all cursor-pointer ${
                     formData.gender === '2'
                       ? 'bg-purple-500 text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -230,11 +323,10 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                   name="height"
                   value={formData.height}
                   onChange={handleChange}
-                  required
                   min="100"
                   max="250"
                   placeholder="170"
-                  className="w-full px-4 py-3 pr-16 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  className="w-full px-4 py-3 pr-16 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition cursor-text"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">
                   cm
@@ -259,11 +351,10 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                   name="weight"
                   value={formData.weight}
                   onChange={handleChange}
-                  required
                   min="30"
                   max="200"
                   placeholder="70"
-                  className="w-full px-4 py-3 pr-16 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  className="w-full px-4 py-3 pr-16 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition cursor-text"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">
                   kg
@@ -294,11 +385,10 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                   name="ap_hi"
                   value={formData.ap_hi}
                   onChange={handleChange}
-                  required
                   min="90"
                   max="200"
                   placeholder="120"
-                  className="w-full px-4 py-3 pr-20 bg-red-50 border-2 border-red-200 rounded-lg focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition"
+                  className="w-full px-4 py-3 pr-20 bg-red-50 border-2 border-red-200 rounded-lg focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition cursor-text"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">
                   mmHg
@@ -323,11 +413,10 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                   name="ap_lo"
                   value={formData.ap_lo}
                   onChange={handleChange}
-                  required
                   min="60"
                   max="130"
                   placeholder="80"
-                  className="w-full px-4 py-3 pr-20 bg-blue-50 border-2 border-blue-200 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                  className="w-full px-4 py-3 pr-20 bg-blue-50 border-2 border-blue-200 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition cursor-text"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">
                   mmHg
@@ -356,7 +445,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 name="cholesterol"
                 value={formData.cholesterol}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition bg-white cursor-pointer"
               >
                 <option value="1">Normal</option>
                 <option value="2">Above Normal</option>
@@ -373,7 +462,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 name="gluc"
                 value={formData.gluc}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition bg-white cursor-pointer"
               >
                 <option value="1">Normal</option>
                 <option value="2">Above Normal</option>
@@ -396,7 +485,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 name="smoke"
                 value={formData.smoke}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white cursor-pointer"
               >
                 <option value="0">No</option>
                 <option value="1">Yes</option>
@@ -412,7 +501,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 name="alco"
                 value={formData.alco}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white cursor-pointer"
               >
                 <option value="0">No</option>
                 <option value="1">Yes</option>
@@ -428,7 +517,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
                 name="active"
                 value={formData.active}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition bg-white cursor-pointer"
               >
                 <option value="0">No</option>
                 <option value="1">Yes</option>
@@ -446,7 +535,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white text-base font-medium"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white text-base font-medium cursor-pointer"
           >
             <option value="both">Both Models - Recommended (Compare Results)</option>
             <option value="logistic">Logistic Regression (92% Accuracy)</option>
@@ -458,13 +547,23 @@ function PatientFormEnhanced({ onSubmit, loading }) {
         <button
           type="submit"
           disabled={loading || Object.keys(errors).length > 0}
-          className={`w-full py-4 rounded-lg font-bold text-lg text-white transition-all ${
+          className={`w-full py-4 rounded-lg font-bold text-lg text-white transition-all flex items-center justify-center gap-3 ${
             loading || Object.keys(errors).length > 0
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
           }`}
         >
-          Predict Cardiovascular Risk
+          {loading ? (
+            <>
+              <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            'Predict Cardiovascular Risk'
+          )}
         </button>
 
         {/* Medical Disclaimer */}
