@@ -44,12 +44,22 @@ pip install -r requirements.txt
 
 ## Running the Server
 
+### Local Development
+
 **Start the FastAPI server:**
 ```powershell
 python main.py
 ```
 
 The server will start at: `http://localhost:8000`
+
+### Production (Live API)
+
+**Live Backend URL:** `https://cardio-fastapi-8ijy.onrender.com`
+
+**API Documentation:** `https://cardio-fastapi-8ijy.onrender.com/docs`
+
+**Health Check:** `https://cardio-fastapi-8ijy.onrender.com/health`
 
 ## API Endpoints
 
@@ -168,15 +178,41 @@ The server will start at: `http://localhost:8000`
 ## Testing the API
 
 ### Using Swagger UI (Recommended)
+
+**Local:**
 1. Open browser: `http://localhost:8000/docs`
 2. Expand any endpoint
 3. Click "Try it out"
 4. Enter test data
 5. Click "Execute"
 
+**Production:**
+Open: `https://cardio-fastapi-8ijy.onrender.com/docs`
+
 ### Using cURL
+
+**Local:**
 ```bash
 curl -X POST "http://localhost:8000/predict/compare" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 45,
+    "gender": 1,
+    "height": 170,
+    "weight": 75,
+    "ap_hi": 120,
+    "ap_lo": 80,
+    "cholesterol": 1,
+    "gluc": 1,
+    "smoke": 0,
+    "alco": 0,
+    "active": 1
+  }'
+```
+
+**Production:**
+```bash
+curl -X POST "https://cardio-fastapi-8ijy.onrender.com/predict/compare" \
   -H "Content-Type: application/json" \
   -d '{
     "age": 45,
@@ -197,7 +233,11 @@ curl -X POST "http://localhost:8000/predict/compare" \
 ```python
 import requests
 
-url = "http://localhost:8000/predict/compare"
+# Use local or production URL
+API_URL = "http://localhost:8000"  # Local
+# API_URL = "https://cardio-fastapi-8ijy.onrender.com"  # Production
+
+url = f"{API_URL}/predict/compare"
 data = {
     "age": 45,
     "gender": 1,
@@ -218,12 +258,60 @@ print(response.json())
 
 ## Model Files Required
 
-The API expects these model files in the `../models/` directory:
+The API automatically downloads model files from GitHub releases on startup if not present locally:
 - `logistic_weights.npy` - Logistic Regression weights
 - `logistic_bias.npy` - Logistic Regression bias
-- `random_forest_model.pkl` - Random Forest model
+- `random_forest_model.pkl` - Random Forest model (~202 MB)
 - `scaler_num.pkl` - Scaler for numerical features
 - `scaler_int.pkl` - Scaler for interaction features
+
+Models are stored in the `models/` directory.
+
+## Frontend Integration
+
+### Using Environment Variables
+
+Create a `.env` file in your frontend project:
+
+```env
+# For local development
+API_URL=http://localhost:8000
+
+# For production
+# API_URL=https://cardio-fastapi-8ijy.onrender.com
+```
+
+### JavaScript/React Example
+
+Use the provided `api-config.js`:
+
+```javascript
+import { API_ENDPOINTS, apiRequest } from './api-config';
+
+// Make a prediction
+const patientData = {
+  age: 45,
+  gender: 1,
+  height: 170,
+  weight: 75,
+  ap_hi: 120,
+  ap_lo: 80,
+  cholesterol: 1,
+  gluc: 1,
+  smoke: 0,
+  alco: 0,
+  active: 1
+};
+
+const result = await apiRequest(API_ENDPOINTS.PREDICT_COMPARE, {
+  method: 'POST',
+  body: JSON.stringify(patientData),
+});
+
+console.log(result);
+```
+
+The API config automatically detects the environment and uses the correct URL.
 
 ## Error Handling
 

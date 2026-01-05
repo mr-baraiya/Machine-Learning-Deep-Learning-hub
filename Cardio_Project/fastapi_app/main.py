@@ -19,12 +19,14 @@ app.add_middleware(
 
 # Model files configuration
 MODEL_DIR = "models"
+BASE_URL = "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/Cardio-ML-Model-v1.0"
+
 MODEL_FILES = {
-    "random_forest_model.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/random_forest_model.pkl",
-    "scaler_int.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/scaler_int.pkl",
-    "scaler_num.pkl": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/scaler_num.pkl",
-    "logistic_weights.npy": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/logistic_weights.npy",
-    "logistic_bias.npy": "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model/logistic_bias.npy",
+    "random_forest_model.pkl": f"{BASE_URL}/random_forest_model.pkl",
+    "scaler_int.pkl": f"{BASE_URL}/scaler_int.pkl",
+    "scaler_num.pkl": f"{BASE_URL}/scaler_num.pkl",
+    "logistic_weights.npy": f"{BASE_URL}/logistic_weights.npy",
+    "logistic_bias.npy": f"{BASE_URL}/logistic_bias.npy",
 }
 
 # Global variables for models
