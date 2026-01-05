@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
-import pickle
 import joblib
 from typing import Literal
 
@@ -20,16 +19,15 @@ app.add_middleware(
 # Load models and scalers
 try:
     # Load Logistic Regression weights and bias
-    lr_weights = np.load("../models/logistic_weights.npy")
-    lr_bias = np.load("../models/logistic_bias.npy")
+    lr_weights = np.load("models/logistic_weights.npy")
+    lr_bias = np.load("models/logistic_bias.npy")
     
     # Load Random Forest model
-    with open("../models/random_forest_model.pkl", "rb") as f:
-        rf_model = pickle.load(f)
+    rf_model = joblib.load("models/random_forest_model.pkl")
     
     # Load scalers
-    scaler_num = joblib.load("../models/scaler_num.pkl")
-    scaler_int = joblib.load("../models/scaler_int.pkl")
+    scaler_num = joblib.load("models/scaler_num.pkl")
+    scaler_int = joblib.load("models/scaler_int.pkl")
     
     print("✓ All models loaded successfully!")
 except Exception as e:
