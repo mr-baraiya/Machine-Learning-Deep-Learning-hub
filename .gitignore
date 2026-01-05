@@ -51,4 +51,5 @@ Cardio_Project/Data/processed/clean_cardio.csv
 
 # Model files and artifacts
 Cardio_Project/models/
-# Cardio_Project/fastapi_app/models/
+Cardio_Project/fastapi_app/models/
+Cardio_Project/frontend/.env

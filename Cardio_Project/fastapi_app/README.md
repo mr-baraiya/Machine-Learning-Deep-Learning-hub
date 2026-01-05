@@ -5,6 +5,13 @@ This FastAPI backend provides REST API endpoints for cardiovascular disease pred
 - Logistic Regression (trained from scratch)
 - Random Forest Classifier
 
+## 🔗 Important Links
+
+- **Live API:** [https://cardio-fastapi-8ijy.onrender.com](https://cardio-fastapi-8ijy.onrender.com)
+- **API Documentation:** [https://cardio-fastapi-8ijy.onrender.com/docs](https://cardio-fastapi-8ijy.onrender.com/docs)
+- **Model Files (Hugging Face):** [https://huggingface.co/mr-baraiya/cardio-disease-model](https://huggingface.co/mr-baraiya/cardio-disease-model/tree/main)
+- **Model Files (GitHub):** [https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/tag/v1.0-model](https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/tag/v1.0-model)
+
 ## Directory Structure
 ```
 fastapi_app/
