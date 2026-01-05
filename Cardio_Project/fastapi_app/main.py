@@ -19,7 +19,7 @@ app.add_middleware(
 
 # Model files configuration
 MODEL_DIR = "models"
-BASE_URL = "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/Cardio-ML-Model-v1.0"
+BASE_URL = "https://github.com/mr-baraiya/Machine-Learning-Deep-Learning-hub/releases/download/v1.0-model"
 
 MODEL_FILES = {
     "random_forest_model.pkl": f"{BASE_URL}/random_forest_model.pkl",
