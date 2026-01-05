@@ -116,13 +116,19 @@ class PatientData(BaseModel):
     active: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
 
 
+class PredictionResult(BaseModel):
+    """Prediction result schema"""
+    risk_level: str = Field(..., description="Risk level: Low Risk or High Risk")
+    probability: float = Field(..., ge=0, le=1, description="Risk probability (0-1)")
+
+
 class EmailReportRequest(BaseModel):
     """Request schema for sending email reports"""
     to_email: EmailStr = Field(..., description="Recipient email address")
     patient_name: str = Field(..., min_length=1, description="Patient full name")
     patient_data: PatientData = Field(..., description="Patient health data")
     model_type: str = Field(..., description="Model type: randomforest, logistic, or compare")
-    prediction_result: dict = Field(..., description="Prediction result from model")
+    prediction_result: PredictionResult = Field(..., description="Prediction result from model")
 
 # --------------------------------------------------
 # LOAD MODELS ON STARTUP
@@ -255,7 +261,7 @@ def compare_models(data: PatientData):
 # --------------------------------------------------
 
 def generate_pdf_report(patient_name: str, patient_data: PatientData, 
-                       model_type: str, prediction_result: dict) -> BytesIO:
+                       model_type: str, prediction_result: PredictionResult) -> BytesIO:
     """
     Generate a professional PDF report for cardiovascular disease prediction
     
@@ -357,36 +363,22 @@ def generate_pdf_report(patient_name: str, patient_data: PatientData,
     # Prediction Results Section
     elements.append(Paragraph("Prediction Results", heading_style))
     
-    if model_type == "compare":
-        # Compare mode - show both models
-        rf_result = prediction_result.get("random_forest", {})
-        lr_result = prediction_result.get("logistic_regression", {})
-        
-        results_data = [
-            ["Model", "Prediction", "Probability", "Risk Level"],
-            ["Random Forest", 
-             "CVD Risk" if rf_result.get("prediction") == 1 else "No CVD Risk",
-             f"{rf_result.get('probability', 0)*100:.2f}%",
-             rf_result.get("risk", "N/A")],
-            ["Logistic Regression",
-             "CVD Risk" if lr_result.get("prediction") == 1 else "No CVD Risk",
-             f"{lr_result.get('probability', 0)*100:.2f}%",
-             lr_result.get("risk", "N/A")],
-        ]
-    else:
-        # Single model mode
-        results_data = [
-            ["Metric", "Value"],
-            ["Model", prediction_result.get("model", "N/A")],
-            ["Prediction", "CVD Risk Detected" if prediction_result.get("prediction") == 1 else "No CVD Risk"],
-            ["Probability", f"{prediction_result.get('probability', 0)*100:.2f}%"],
-            ["Risk Level", prediction_result.get("risk", "N/A")],
-        ]
+    # Single model mode - use PredictionResult fields directly
+    results_data = [
+        ["Metric", "Value"],
+        ["Model", model_type.replace("_", " ").title()],
+        ["Risk Level", prediction_result.risk_level],
+        ["Probability", f"{prediction_result.probability * 100:.2f}%"],
+    ]
     
-    results_table = Table(results_data, colWidths=[2*inch, 1.5*inch, 1.5*inch, 1.5*inch] if model_type == "compare" else [2.5*inch, 3.5*inch])
+    results_table = Table(results_data, colWidths=[2.5*inch, 3.5*inch])
+    
+    # Color based on risk level
+    is_high_risk = "High" in prediction_result.risk_level
+    header_color = colors.HexColor('#D32F2F') if is_high_risk else colors.HexColor('#388E3C')
     
     table_style = [
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D32F2F') if prediction_result.get("prediction") == 1 else colors.HexColor('#388E3C')),
+        ('BACKGROUND', (0, 0), (-1, 0), header_color),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -402,7 +394,7 @@ def generate_pdf_report(patient_name: str, patient_data: PatientData,
     # Recommendations Section
     elements.append(Paragraph("Medical Recommendations", heading_style))
     
-    if prediction_result.get("prediction") == 1:
+    if is_high_risk:
         recommendations = [
             "• Consult a cardiologist for comprehensive evaluation",
             "• Monitor blood pressure and cholesterol regularly",
@@ -462,7 +454,8 @@ def generate_pdf_report(patient_name: str, patient_data: PatientData,
 # --------------------------------------------------
 
 def send_email_with_attachment(to_email: str, patient_name: str, 
-                               pdf_buffer: BytesIO, risk_level: str) -> bool:
+                               pdf_buffer: BytesIO, risk_level: str,
+                               model_type: str, probability: float) -> bool:
     """
     Send email with PDF report attachment using SMTP
     
@@ -471,6 +464,8 @@ def send_email_with_attachment(to_email: str, patient_name: str,
         patient_name: Patient name
         pdf_buffer: PDF file buffer
         risk_level: Risk assessment result
+        model_type: Model type used for prediction
+        probability: Risk probability
     
     Returns:
         bool: True if email sent successfully, False otherwise
@@ -499,20 +494,23 @@ Dear {patient_name},
 
 Thank you for using CardioSense cardiovascular disease prediction system.
 
-Your health assessment report is attached to this email. Please review the results and recommendations carefully.
+Your health assessment report is attached to this email.
 
 Assessment Summary:
+- Model Used: {model_type}
 - Risk Level: {risk_level}
+- Probability: {probability * 100:.2f}%
 - Report Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-IMPORTANT: This is an AI-generated educational report and should NOT be used for medical diagnosis. 
-Please consult with qualified healthcare professionals for proper medical evaluation and treatment.
+IMPORTANT:
+This is an AI-generated educational report and should NOT be used for medical diagnosis.
+Please consult qualified healthcare professionals.
 
 Best regards,
-CardioSense Team
+CardioSense Support Team
 
 ---
-This is an automated message. Please do not reply to this email.
+This is an automated message. Please do not reply.
 """
         
         msg.attach(MIMEText(body, 'plain'))
@@ -552,11 +550,9 @@ def send_report(request: EmailReportRequest):
     3. Returns confirmation of delivery
     """
     try:
-        # Extract risk level from prediction result
-        if request.model_type == "compare":
-            risk_level = request.prediction_result.get("random_forest", {}).get("risk", "Unknown")
-        else:
-            risk_level = request.prediction_result.get("risk", "Unknown")
+        # Use risk_level and probability directly from frontend
+        risk_level = request.prediction_result.risk_level
+        probability = request.prediction_result.probability
         
         # Generate PDF report
         pdf_buffer = generate_pdf_report(
@@ -571,7 +567,9 @@ def send_report(request: EmailReportRequest):
             to_email=request.to_email,
             patient_name=request.patient_name,
             pdf_buffer=pdf_buffer,
-            risk_level=risk_level
+            risk_level=risk_level,
+            model_type=request.model_type,
+            probability=probability
         )
         
         return {
@@ -580,7 +578,8 @@ def send_report(request: EmailReportRequest):
             "timestamp": datetime.now().isoformat(),
             "recipient": request.to_email,
             "patient_name": request.patient_name,
-            "risk_level": risk_level
+            "risk_level": risk_level,
+            "probability": f"{probability * 100:.2f}%"
         }
         
     except ValueError as ve:

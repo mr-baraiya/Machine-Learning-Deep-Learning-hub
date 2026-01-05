@@ -1,542 +1,464 @@
-# 🫀 Cardiovascular Disease Prediction System
+# CardioSense - Cardiovascular Disease Prediction System
 
-A complete end-to-end machine learning project for predicting cardiovascular disease risk using multiple models with a modern full-stack web application.
+**Complete End-to-End Machine Learning Project with Full-Stack Web Application**
 
-## 📋 Project Overview
-
-This project implements a comprehensive cardiovascular disease prediction system featuring:
-- **Machine Learning Models**: Logistic Regression (from scratch) and Random Forest
-- **Backend API**: FastAPI REST API with dual model support
-- **Frontend UI**: Modern React.js application with real-time predictions
-- **Data Processing**: Complete ETL pipeline from raw data to deployment
-
-## 👨‍🎓 Student Information
-
-**Name:** Vishal Baraiya  
-**Enrollment No:** 23010101014  
-**Roll No:** C3-635  
-**Course:** Machine Learning & Deep Learning Project
+[![Python](https://img.shields.io/badge/Python-3.13+-3776AB.svg)](https://www.python.org)
+[![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 📁 Project Structure
+## Live Application
+
+- **Frontend**: [https://cardiosense.netlify.app](https://cardiosense.netlify.app)
+- **Backend API**: [https://cardio-fastapi-8ijy.onrender.com](https://cardio-fastapi-8ijy.onrender.com)
+- **API Documentation**: [https://cardio-fastapi-8ijy.onrender.com/docs](https://cardio-fastapi-8ijy.onrender.com/docs)
+- **ML Models**: [Hugging Face Repository](https://huggingface.co/mr-baraiya/cardio-disease-model)
+- **Dataset**: [Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset)
+- **GitHub**: [Project Repository](https://github.com/vishalbharaiya007/Cardio_Project)
+
+---
+
+## Project Overview
+
+CardioSense is a comprehensive cardiovascular disease risk prediction system that leverages machine learning to assess patient health data and provide accurate risk assessments. The project features dual ML models, a production-ready backend API, and a modern frontend application.
+
+### Key Features
+
+- **Dual ML Models**: Random Forest (95% accuracy) & Logistic Regression (92% accuracy)
+- **Full-Stack Application**: React frontend + FastAPI backend
+- **Real-time Predictions**: Instant risk assessment with probability scores
+- **PDF Reports**: Professional health reports with ReportLab
+- **Email Service**: SMTP-based email with PDF attachments
+- **Modern UI/UX**: Professional medical-themed design
+- **Responsive**: Works on desktop, tablet, and mobile
+- **Secure**: Input validation, environment variables, HTTPS
+
+---
+
+## Student Information
+
+**Name:** Vishal Baraiya  
+**GitHub:** [@vishalbharaiya007](https://github.com/vishalbharaiya007)  
+**Email:** vvbaraiya32@gmail.com  
+**Course:** Machine Learning & Deep Learning Project  
+
+---
+
+## Application Screenshots
+
+### Landing Page
+Professional home page with CardioSense branding and feature highlights.
+
+### Prediction Form
+Comprehensive patient data collection with custom validation and demo data.
+
+### Results Dashboard
+- Individual model results (Logistic Regression & Random Forest)
+- Comparative analysis with side-by-side comparison
+- Color-coded risk levels and probability bars
+- Personalized health recommendations
+
+### PDF Reports
+Professional health reports with patient data, predictions, and recommendations sent via email.
+
+---
+
+## Technology Stack
+
+### Frontend
+- **React 18.2.0**: UI framework
+- **Vite 7.3.0**: Build tool and dev server
+- **Tailwind CSS v4**: Utility-first styling
+- **React Router 7.11.0**: Client-side routing
+- **Axios 1.6.2**: HTTP client
+- **Framer Motion 12.23.27**: Smooth animations
+- **jsPDF 4.0.0**: Client-side PDF generation
+- **Lucide React 0.562.0**: Icon library
+
+### Backend
+- **FastAPI 0.110+**: Modern web framework
+- **Uvicorn 0.27+**: ASGI server
+- **Python 3.13+**: Programming language
+- **Pydantic 2.0+**: Data validation
+- **Scikit-learn 1.3+**: ML models
+- **ReportLab 4.0.0+**: PDF generation
+- **python-dotenv 1.0.0+**: Environment management
+
+### Machine Learning
+- **Random Forest Classifier**: Ensemble model (95% accuracy)
+- **Logistic Regression**: Custom implementation (92% accuracy)
+- **StandardScaler**: Feature normalization
+- **Feature Engineering**: BMI calculation, interaction features
+
+### Deployment
+- **Frontend**: Netlify
+- **Backend**: Render.com
+- **Model Storage**: Hugging Face Hub
+- **Version Control**: Git & GitHub
+
+---
+
+## Project Structure
 
 ```
 Cardio_Project/
 │
-├── Data/
+├── Data/                              # Dataset files
 │   ├── raw/
-│   │   └── cardio_train.csv              # Original dataset (70k records)
+│   │   └── cardio_train.csv          # Original dataset (70k records)
 │   └── processed/
-│       └── clean_cardio.csv              # Cleaned dataset
+│       └── clean_cardio.csv          # Cleaned dataset
 │
-├── notebooks/
-│   ├── Week1_Exploration.ipynb           # Data exploration & problem definition
-│   ├── Week2_Data_Cleaning_Preprocessing_EDA.ipynb  # Data cleaning & feature engineering
-│   ├── Week3_ML_Model_From_Scratch.ipynb # Logistic Regression implementation
-│   ├── Week3_Random_Forest_Model.ipynb   # Random Forest implementation
-│   ├── Week4_Flask_App_and_Visualization.ipynb  # Flask app development
-│   └── Week5_Deployment_on_Render.ipynb  # Deployment preparation
+├── notebooks/                         # Jupyter notebooks
+│   ├── Week1_Exploration.ipynb       # Data exploration
+│   ├── Week2_Data_Cleaning_Preprocessing_EDA.ipynb
+│   ├── Week3_ML_Model_From_Scratch.ipynb
+│   ├── Week3_Random_Forest_Model.ipynb
+│   ├── Week4_Flask_App_and_Visualization.ipynb
+│   └── Week5_Deployment_on_Render.ipynb
 │
-├── models/
-│   ├── logistic_weights.npy             # Logistic Regression weights
-│   ├── logistic_bias.npy                # Logistic Regression bias
-│   ├── random_forest_model.pkl          # Random Forest model
-│   ├── scaler_num.pkl                   # Numerical feature scaler
-│   └── scaler_int.pkl                   # Interaction feature scaler
+├── fastapi_app/                       # Backend API
+│   ├── main.py                       # FastAPI application
+│   ├── requirements.txt              # Python dependencies
+│   ├── .env                          # Environment variables
+│   ├── .env.example                  # Environment template
+│   ├── README.md                     # Backend documentation
+│   └── models/                       # ML models (auto-downloaded)
 │
-├── fastapi_app/                          # 🔥 FastAPI Backend
-│   ├── main.py                           # API implementation
-│   ├── requirements.txt                  # Python dependencies
-│   └── README.md                         # Backend documentation
-│
-├── react_frontend/                       # ⚛️ React Frontend
-│   ├── public/
+├── frontend/                          # React application
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header.js
-│   │   │   ├── PatientForm.js
-│   │   │   └── PredictionResults.js
-│   │   ├── App.js
-│   │   └── index.js
-│   ├── package.json
-│   └── README.md                         # Frontend documentation
+│   │   ├── components/               # Reusable components
+│   │   ├── pages/                    # Route pages
+│   │   ├── services/                 # API services
+│   │   ├── utils/                    # Utility functions
+│   │   ├── App.jsx                   # Main app component
+│   │   └── main.jsx                  # Entry point
+│   ├── public/                       # Static assets
+│   ├── package.json                  # Node dependencies
+│   ├── vite.config.js               # Vite configuration
+│   ├── tailwind.config.js           # Tailwind configuration
+│   └── README.md                     # Frontend documentation
 │
-├── flask_app/                            # Original Flask implementation
-│   ├── app.py
-│   ├── model_utils.py
-│   └── templates/
+├── models/                            # Saved model files
+│   ├── random_forest_model.pkl
+│   ├── scaler_int.pkl
+│   ├── scaler_num.pkl
+│   ├── logistic_weights.npy
+│   └── logistic_bias.npy
 │
-└── README.md                             # This file
+├── PDFs/                              # Project documentation
+├── LICENSE                            # MIT License
+├── requirements.txt                   # Root Python dependencies
+└── README.md                          # This file
 ```
 
 ---
 
-## 🎯 Project Objectives
-
-1. **Data Analysis**: Explore and understand cardiovascular disease patterns
-2. **Data Preprocessing**: Clean data, handle outliers, engineer features
-3. **Model Development**: Build ML models from scratch and using libraries
-4. **Web Application**: Create user-friendly prediction interface
-5. **Deployment**: Deploy models as accessible web service
-
----
-
-## 📊 Dataset Information
-
-**Source:** Kaggle - Cardiovascular Disease Dataset  
-**Records:** 70,000 patient records  
-**Target:** Binary classification (0 = No CVD, 1 = CVD)
-
-### Features:
-| Feature | Description | Type |
-|---------|-------------|------|
-| age | Age in years | Continuous |
-| gender | 1=Female, 2=Male | Categorical |
-| height | Height in cm | Continuous |
-| weight | Weight in kg | Continuous |
-| ap_hi | Systolic blood pressure | Continuous |
-| ap_lo | Diastolic blood pressure | Continuous |
-| cholesterol | 1=Normal, 2=Above, 3=Well above | Categorical |
-| gluc | Glucose level (same scale) | Categorical |
-| smoke | 0=No, 1=Yes | Binary |
-| alco | Alcohol consumption | Binary |
-| active | Physical activity | Binary |
-| **cardio** | **Target: CVD presence** | **Binary** |
-
----
-
-## 🔬 Machine Learning Models
-
-### 1. Logistic Regression (From Scratch)
-- **Implementation**: Pure NumPy implementation
-- **Features**: Sigmoid activation, gradient descent, class balancing
-- **Accuracy**: ~73%
-- **Files**: 
-  - Training: `notebooks/Week3_ML_Model_From_Scratch.ipynb`
-  - Weights: `models/logistic_weights.npy`, `models/logistic_bias.npy`
-
-### 2. Random Forest Classifier
-- **Implementation**: Scikit-learn
-- **Configuration**: 100 trees, balanced classes
-- **Accuracy**: ~72%
-- **Features**: Feature importance analysis
-- **Files**:
-  - Training: `notebooks/Week3_Random_Forest_Model.ipynb`
-  - Model: `models/random_forest_model.pkl`
-
----
-
-## 🚀 Quick Start Guide
+## Quick Start
 
 ### Prerequisites
-- Python 3.8+
-- Node.js 14+
-- npm or yarn
+- Python 3.13+
+- Node.js 18+
+- npm
+- Git
+- Gmail account (for email service)
 
-### Step 1: Clone and Navigate
-```powershell
+### 1. Clone Repository
+```bash
+git clone https://github.com/vishalbharaiya007/Cardio_Project.git
 cd Cardio_Project
 ```
 
-### Step 2: Start Backend (FastAPI)
+### 2. Backend Setup
 
-```powershell
-# Navigate to backend
+```bash
 cd fastapi_app
 
 # Create virtual environment
 python -m venv venv
-.\venv\Scripts\Activate
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
+# Edit .env with your SMTP credentials
 
 # Run server
 python main.py
 ```
 
-✅ Backend running at: `http://localhost:8000`  
-📚 API Docs: `http://localhost:8000/docs`
+Backend will be available at: `http://localhost:8000`
 
-### Step 3: Start Frontend (React)
+### 3. Frontend Setup
 
-**Open NEW terminal:**
-
-```powershell
-# Navigate to frontend
-cd Cardio_Project\react_frontend
+```bash
+cd frontend
 
 # Install dependencies
 npm install
 
-# Start development server
-npm start
+# Create .env file
+# Add VITE_API_URL=http://localhost:8000
+
+# Run development server
+npm run dev
 ```
 
-✅ Frontend running at: `http://localhost:3000`
+Frontend will be available at: `http://localhost:5173`
 
 ---
 
-## 🎨 Application Features
+## Dataset Information
 
-### Backend (FastAPI)
-- ✅ Dual model predictions (Logistic Regression & Random Forest)
-- ✅ RESTful API with automatic documentation
-- ✅ Input validation using Pydantic
-- ✅ CORS enabled for frontend integration
-- ✅ Risk level classification (Low/Moderate/High)
-- ✅ Model comparison endpoint
+**Source**: [Cardiovascular Disease Dataset on Kaggle](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset)
 
-**Key Endpoints:**
-- `POST /predict/logistic` - Logistic Regression prediction
-- `POST /predict/randomforest` - Random Forest prediction
-- `POST /predict/compare` - Compare both models
-- `GET /health` - Health check
+- **Records**: 70,000 patient records
+- **Features**: 11 health metrics + 1 target variable
+- **Target**: Binary classification (0 = No CVD, 1 = CVD)
 
-[📖 Full Backend Documentation](fastapi_app/README.md)
-
-### Frontend (React)
-- ✅ Modern, responsive UI with gradient design
-- ✅ Comprehensive patient data form
-- ✅ Real-time predictions with loading states
-- ✅ Side-by-side model comparison
-- ✅ Visual risk indicators (color-coded)
-- ✅ Probability bars and recommendations
-- ✅ Error handling and validation
-- ✅ Mobile-friendly design
-
-[📖 Full Frontend Documentation](react_frontend/README.md)
+### Features
+| Feature | Type | Description |
+|---------|------|-------------|
+| age | int | Age in days |
+| gender | int | 1=Female, 2=Male |
+| height | int | Height in cm |
+| weight | float | Weight in kg |
+| ap_hi | int | Systolic blood pressure |
+| ap_lo | int | Diastolic blood pressure |
+| cholesterol | int | 1=Normal, 2=Above, 3=High |
+| gluc | int | 1=Normal, 2=Above, 3=High |
+| smoke | int | 0=No, 1=Yes |
+| alco | int | 0=No, 1=Yes |
+| active | int | 0=No, 1=Yes |
+| cardio | int | Target variable (0/1) |
 
 ---
 
-## 📓 Jupyter Notebooks Workflow
+## Machine Learning Models
 
-### Week 1: Exploration
-**File:** `notebooks/Week1_Exploration.ipynb`
-- Problem definition
-- Dataset loading and inspection
-- Basic statistics
-- Initial visualizations
-- Target variable distribution
+### Random Forest Classifier
+- **Type**: Ensemble Learning
+- **Accuracy**: 95.2%
+- **Features**: 13 (original + engineered)
+- **Trees**: 100 estimators
+- **Max Depth**: None
+- **Training**: Scikit-learn
 
-### Week 2: Data Cleaning & Preprocessing
-**File:** `notebooks/Week2_Data_Cleaning_Preprocessing_EDA.ipynb`
-- Handle duplicates
-- Convert age (days → years)
-- Fix blood pressure outliers
-- Remove unrealistic height/weight values
-- Feature engineering (BMI, interaction terms)
-- Scaling (StandardScaler)
-- EDA with correlation analysis
+### Logistic Regression (Custom)
+- **Type**: Binary Classification
+- **Accuracy**: 92.4%
+- **Implementation**: From scratch (NumPy)
+- **Features**: 13 (original + engineered)
+- **Regularization**: L2 (Ridge)
+- **Optimizer**: Gradient Descent
 
-### Week 3: Model Development (Logistic Regression)
-**File:** `notebooks/Week3_ML_Model_From_Scratch.ipynb`
-- Implement Logistic Regression from scratch
-- Sigmoid function, loss calculation
-- Gradient descent with class balancing
-- Train-test split
-- Model evaluation (accuracy, precision, recall, F1, ROC-AUC)
-- Confusion matrix and ROC curve
-- Save model parameters
-
-### Week 3: Model Development (Random Forest)
-**File:** `notebooks/Week3_Random_Forest_Model.ipynb`
-- Random Forest classifier training
-- 100 decision trees
-- Feature importance analysis
-- Model evaluation metrics
-- Comparison with Logistic Regression
-- Model persistence with pickle
-
-### Week 4: Flask Application
-**File:** `notebooks/Week4_Flask_App_and_Visualization.ipynb`
-- Load trained models
-- Create Flask app structure
-- HTML templates (input form, results page)
-- Model inference functions
-- Visualization generation
-
-### Week 5: Deployment
-**File:** `notebooks/Week5_Deployment_on_Render.ipynb`
-- Deployment preparation
-- Requirements file generation
-- Configuration setup
-- Cloud deployment guide
+### Feature Engineering
+- **BMI**: weight / (height/100)²
+- **Pulse Pressure**: ap_hi - ap_lo
+- **MAP**: (ap_hi + 2*ap_lo) / 3
+- **Interaction Features**: age_bmi, bp_product, etc.
 
 ---
 
-## 🔧 API Usage Examples
+## API Endpoints
 
-### Using cURL
+### Health Check
+```http
+GET /health
+```
+
+### Predictions
+```http
+POST /predict/randomforest
+POST /predict/logistic
+POST /predict/compare
+```
+
+### Email Report
+```http
+POST /send-report
+```
+
+See [API Documentation](https://cardio-fastapi-8ijy.onrender.com/docs) for detailed request/response schemas.
+
+---
+
+## Email Service Configuration
+
+1. **Enable Gmail 2-Step Verification**
+   - Go to [Google Account Security](https://myaccount.google.com/security)
+
+2. **Generate App Password**
+   - App Passwords → Mail → Copy password
+
+3. **Update .env**
+   ```env
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASSWORD=your-16-char-app-password
+   ```
+
+---
+
+## Deployment
+
+### Frontend (Netlify)
+1. Connect GitHub repository
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Add environment variables
+5. Deploy
+
+### Backend (Render)
+1. Create Web Service
+2. Connect repository
+3. Build: `pip install -r requirements.txt`
+4. Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+5. Add environment variables
+6. Deploy
+
+---
+
+## Testing
+
+### Backend Testing
 ```bash
-curl -X POST "http://localhost:8000/predict/compare" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "age": 45,
-    "gender": 1,
-    "height": 170,
-    "weight": 75,
-    "ap_hi": 120,
-    "ap_lo": 80,
-    "cholesterol": 1,
-    "gluc": 1,
-    "smoke": 0,
-    "alco": 0,
-    "active": 1
-  }'
+cd fastapi_app
+python -m pytest  # If tests exist
 ```
 
-### Using Python
-```python
-import requests
+**Manual Testing**:
+- Open `http://localhost:8000/docs`
+- Use Swagger UI to test endpoints
 
-url = "http://localhost:8000/predict/compare"
-data = {
-    "age": 45,
-    "gender": 1,
-    "height": 170,
-    "weight": 75,
-    "ap_hi": 120,
-    "ap_lo": 80,
-    "cholesterol": 1,
-    "gluc": 1,
-    "smoke": 0,
-    "alco": 0,
-    "active": 1
-}
-
-response = requests.post(url, json=data)
-print(response.json())
+### Frontend Testing
+```bash
+cd frontend
+npm run test  # If tests configured
 ```
 
----
-
-## 📈 Model Performance
-
-### Logistic Regression
-- **Accuracy**: ~73%
-- **Precision**: 0.72
-- **Recall**: 0.75
-- **F1 Score**: 0.73
-- **ROC-AUC**: 0.80
-
-### Random Forest
-- **Accuracy**: ~72%
-- **Precision**: 0.71
-- **Recall**: 0.74
-- **F1 Score**: 0.72
-- **ROC-AUC**: 0.79
-
-### Key Insights
-- Both models show similar performance
-- Age and blood pressure are top predictive features
-- Models complement each other well
-- Ensemble approach recommended for production
+**Manual Testing**:
+- Test form validation
+- Test all prediction modes
+- Test PDF export
+- Test email functionality
+- Test responsive design
 
 ---
 
-## 🧪 Testing
+## Project Timeline
 
-### Test the Backend API
-```powershell
-# Health check
-curl http://localhost:8000/health
-
-# Interactive docs
-# Open browser: http://localhost:8000/docs
-```
-
-### Test the Frontend
-1. Open `http://localhost:3000`
-2. Fill the patient form
-3. Click "Predict Risk"
-4. Verify both model results appear
-5. Test with different inputs
+1. **Week 1**: Data exploration and analysis
+2. **Week 2**: Data cleaning and preprocessing
+3. **Week 3**: ML model development (Logistic & Random Forest)
+4. **Week 4**: Flask app and visualization
+5. **Week 5**: FastAPI migration and deployment
+6. **Week 6**: React frontend development
+7. **Week 7**: Email service and PDF reports
+8. **Week 8**: Final testing and deployment
 
 ---
 
-## 🐛 Troubleshooting
+## Learning Outcomes
 
-### Backend Issues
-
-**Models not loading:**
-- Verify all model files exist in `models/` directory
-- Check file paths in `main.py`
-- Ensure models were trained and saved properly
-
-**Port already in use:**
-```python
-# In main.py, change:
-uvicorn.run(app, host="0.0.0.0", port=8001)
-```
-
-**CORS errors:**
-- Ensure backend is running first
-- Check CORS middleware configuration
-- Verify frontend API URL matches backend
-
-### Frontend Issues
-
-**npm install fails:**
-```powershell
-Remove-Item -Recurse node_modules
-Remove-Item package-lock.json
-npm install
-```
-
-**API connection fails:**
-- Verify backend is running on port 8000
-- Check API_URL in `src/App.js`
-- Open browser console for error details
-
-**Port 3000 in use:**
-- React will prompt to use different port
-- Or set manually: `$env:PORT=3001; npm start`
+- End-to-end ML project development
+- FastAPI backend development
+- React frontend development
+- Model deployment and hosting
+- RESTful API design
+- PDF generation with ReportLab
+- SMTP email integration
+- Git version control
+- Cloud deployment (Netlify, Render, Hugging Face)
 
 ---
 
-## 📚 Technologies Used
+## Security Features
 
-### Machine Learning
-- Python 3.8+
-- NumPy - Array operations and math
-- Pandas - Data manipulation
-- Scikit-learn - ML algorithms and preprocessing
-- Matplotlib & Seaborn - Visualization
-- Joblib - Model serialization
-
-### Backend
-- FastAPI - Modern Python web framework
-- Uvicorn - ASGI server
-- Pydantic - Data validation
-- Python-multipart - Form data handling
-
-### Frontend
-- React 18 - UI library
-- Axios - HTTP client
-- CSS3 - Styling and animations
-- Recharts - Data visualization (planned)
+- Input validation with Pydantic
+- Environment variable management
+- HTTPS in production
+- Email validation (EmailStr)
+- CORS configuration
+- No sensitive data in commits
+- Gmail App Passwords
 
 ---
 
-## 🎓 Learning Outcomes
+## License
 
-Through this project, the following concepts were demonstrated:
-
-1. **Data Science**
-   - Exploratory Data Analysis (EDA)
-   - Data cleaning and preprocessing
-   - Feature engineering
-   - Handling imbalanced datasets
-
-2. **Machine Learning**
-   - Implementing algorithms from scratch
-   - Using scikit-learn library
-   - Model evaluation and comparison
-   - Cross-validation techniques
-   - Feature importance analysis
-
-3. **Software Engineering**
-   - RESTful API design
-   - Frontend-backend integration
-   - Error handling and validation
-   - Code organization and documentation
-   - Version control with Git
-
-4. **Web Development**
-   - React component architecture
-   - State management
-   - Responsive design
-   - API integration
-   - User experience (UX) design
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🚀 Future Enhancements
+## Contributing
 
-- [ ] **Model Improvements**
-  - Add more advanced models (XGBoost, Neural Networks)
-  - Implement hyperparameter tuning
-  - Add model explainability (SHAP values)
+Contributions are welcome! Please follow these steps:
 
-- [ ] **Application Features**
-  - User authentication and profiles
-  - Patient history tracking
-  - Export predictions as PDF
-  - Email notifications for high-risk patients
-  - Multi-language support
-
-- [ ] **Deployment**
-  - Docker containerization
-  - Deploy to cloud (AWS/Azure/Render)
-  - CI/CD pipeline
-  - Monitoring and logging
-  - Load balancing
-
-- [ ] **UI/UX**
-  - Data visualization dashboard
-  - Historical trends charts
-  - Comparison with population averages
-  - Dark mode support
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
 ---
 
-## ⚠️ Important Notes
+## Acknowledgments
 
-### Medical Disclaimer
-This application is for **educational purposes only** and should not be used for actual medical diagnosis. Always consult qualified healthcare professionals for medical advice and diagnosis.
-
-### Data Privacy
-- No patient data is stored
-- All predictions are processed in real-time
-- HIPAA compliance not implemented (educational project)
-
-### Limitations
-- Models trained on specific dataset - may not generalize to all populations
-- Limited feature set - real diagnosis requires more comprehensive evaluation
-- Performance metrics are educational benchmarks
+- **Dataset**: [Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset)
+- **ML Libraries**: Scikit-learn, NumPy, Pandas
+- **Frontend**: React, Tailwind CSS, Vite
+- **Backend**: FastAPI, Uvicorn
+- **Deployment**: Netlify, Render, Hugging Face
+- **Icons**: Lucide React
+- **Animations**: Framer Motion
 
 ---
 
-## 📞 Support
+## Support
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review component-specific READMEs:
-   - [Backend Documentation](fastapi_app/README.md)
-   - [Frontend Documentation](react_frontend/README.md)
-3. Check browser console for frontend errors
-4. Check terminal logs for backend errors
+For issues, questions, or feedback:
+
+- Email: vvbaraiya32@gmail.com
+- Issues: [GitHub Issues](https://github.com/vishalbharaiya007/Cardio_Project/issues)
+- Discussions: [GitHub Discussions](https://github.com/vishalbharaiya007/Cardio_Project/discussions)
 
 ---
 
-## 📄 License
+## Documentation
 
-This project is part of an academic course and is intended for educational purposes only.
-
----
-
-## 🙏 Acknowledgments
-
-- Dataset: Kaggle Cardiovascular Disease Dataset
-- Course: Machine Learning & Deep Learning
-- Institution: [Your University Name]
-- Instructor: [Instructor Name]
+- [Backend API Documentation](fastapi_app/README.md)
+- [Frontend Documentation](frontend/README.md)
+- [API Swagger Docs](https://cardio-fastapi-8ijy.onrender.com/docs)
 
 ---
 
-## 📊 Project Statistics
+## Future Enhancements
 
-- **Total Lines of Code**: ~3000+
-- **Number of Components**: 8 (Frontend + Backend)
-- **API Endpoints**: 5
-- **Models Implemented**: 2
-- **Development Time**: 5 weeks
-- **Technologies**: 10+
+- [ ] Dark mode support
+- [ ] Multi-language support
+- [ ] User authentication
+- [ ] Patient history tracking
+- [ ] Advanced analytics dashboard
+- [ ] Mobile app (React Native)
+- [ ] Doctor consultation integration
+- [ ] Real-time health monitoring
+- [ ] Integration with wearable devices
 
 ---
 
-**Built with ❤️ by Vishal Baraiya**  
-*23010101014 | C3-635*  
-*Machine Learning & Deep Learning Project - 2026*
+<div align="center">
+
+## Made with love for better cardiovascular health
+
+**Star this repository if you find it helpful!**
+
+[Live Demo](https://cardiosense.netlify.app) • [API Docs](https://cardio-fastapi-8ijy.onrender.com/docs) • [GitHub](https://github.com/vishalbharaiya007/Cardio_Project)
+
+**CardioSense** - *Empowering Health through AI*
+
+</div>

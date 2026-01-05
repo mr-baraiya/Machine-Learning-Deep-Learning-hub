@@ -151,10 +151,8 @@ function ResultsLogistic() {
         'logistic',
         patientData,
         {
-          model: 'Logistic Regression',
-          prediction: prediction,
-          probability: probability,
-          risk: hasDisease ? 'High Risk' : 'Low Risk'
+          risk_level: hasDisease ? 'High Risk' : 'Low Risk',
+          probability: probability
         }
       );
 

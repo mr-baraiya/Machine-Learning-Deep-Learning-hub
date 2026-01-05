@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, TrendingDown, TreeDeciduous, Activity, ArrowLeft, Download } from 'lucide-react';
+import { CheckCircle, XCircle, TrendingDown, TreeDeciduous, Activity, ArrowLeft, Download, Mail, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import CompareChart from '../components/CompareChart';
+import { sendReportViaBackend } from '../services/emailService';
 
 function ResultsCompare() {
   const location = useLocation();
   const navigate = useNavigate();
   const predictions = location.state?.predictions;
   const personalDetails = location.state?.personalDetails || {};
+  const [emailSending, setEmailSending] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailStatus, setEmailStatus] = useState({ type: '', message: '' });
 
   // Redirect to predict page if no predictions data
   if (!predictions) {
@@ -22,6 +26,46 @@ function ResultsCompare() {
   
   const handleReset = () => {
     navigate('/predict');
+  };
+
+  const sendEmailWithReport = async () => {
+    if (!personalDetails.email) {
+      setEmailStatus({ type: 'error', message: 'No email address provided' });
+      setShowEmailModal(true);
+      return;
+    }
+
+    setEmailSending(true);
+    try {
+      const patientData = location.state?.patientData || {};
+      
+      // Use Random Forest result as primary (typically more accurate)
+      await sendReportViaBackend(
+        personalDetails.email,
+        personalDetails.name || 'Patient',
+        'compare',
+        patientData,
+        {
+          risk_level: random_forest.prediction === 1 ? 'High Risk' : 'Low Risk',
+          probability: random_forest.probability
+        }
+      );
+
+      setEmailStatus({
+        type: 'success',
+        message: `Comparative report successfully sent to ${personalDetails.email} with PDF attachment!`
+      });
+      setShowEmailModal(true);
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      setEmailStatus({
+        type: 'error',
+        message: error.response?.data?.detail || error.message || 'Failed to send email. Please try again.'
+      });
+      setShowEmailModal(true);
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   const exportPDF = () => {
@@ -310,7 +354,7 @@ function ResultsCompare() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="flex gap-4 justify-center"
+            className="flex gap-4 justify-center flex-wrap"
           >
             <button
               onClick={handleReset}
@@ -326,7 +370,66 @@ function ResultsCompare() {
               <Download className="w-5 h-5" />
               Export PDF Report
             </button>
+            <button
+              onClick={sendEmailWithReport}
+              disabled={!personalDetails.email || emailSending}
+              className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              {emailSending ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="w-5 h-5" />
+                  Email Report
+                </>
+              )}
+            </button>
           </motion.div>
+
+          {/* Email Status Modal */}
+          {showEmailModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowEmailModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-2xl font-bold ${
+                    emailStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {emailStatus.type === 'success' ? 'Success!' : 'Error'}
+                  </h3>
+                  <button
+                    onClick={() => setShowEmailModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6 text-gray-600" />
+                  </button>
+                </div>
+                <p className="text-gray-700 mb-6">{emailStatus.message}</p>
+                <button
+                  onClick={() => setShowEmailModal(false)}
+                  className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
+                    emailStatus.type === 'success' 
+                      ? 'bg-green-600 hover:bg-green-700' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  Close
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
 
           {/* Disclaimer */}
           <motion.div

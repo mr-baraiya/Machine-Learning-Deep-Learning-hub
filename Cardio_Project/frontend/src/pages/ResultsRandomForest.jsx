@@ -46,10 +46,8 @@ function ResultsRandomForest() {
         'randomforest',
         patientData,
         {
-          model: 'Random Forest',
-          prediction: hasDisease ? 'CVD Risk Detected' : 'No CVD Risk',
-          probability: riskPercentage,
-          risk: hasDisease ? 'High Risk' : 'Low Risk'
+          risk_level: hasDisease ? 'High Risk' : 'Low Risk',
+          probability: probability
         }
       );
 
