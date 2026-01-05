@@ -1,0 +1,19 @@
+name: CardioSense API Health Check
+
+on:
+  schedule:
+     # Runs every 6 hours (UTC)
+    - cron: "0 */6 * * *"
+
+  # Allows manual run from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check API Health
+        run: |
+          echo "Checking CardioSense API health..."
+          curl -f https://cardio-fastapi-8ijy.onrender.com/health
