@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Download, TrendingUp, TreeDeciduous, Lightbulb, AlertTriangle } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import CompareChart from './CompareChart';
 
 function PredictionResults({ predictions, onReset }) {
@@ -47,7 +47,7 @@ function PredictionResults({ predictions, onReset }) {
       ['Risk Level', random_forest.risk],
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 70,
       head: [['Metric', 'Value']],
       body: rfData,
@@ -70,7 +70,7 @@ function PredictionResults({ predictions, onReset }) {
       ['Risk Level', logistic_regression.risk],
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: lrStartY + 5,
       head: [['Metric', 'Value']],
       body: lrData,

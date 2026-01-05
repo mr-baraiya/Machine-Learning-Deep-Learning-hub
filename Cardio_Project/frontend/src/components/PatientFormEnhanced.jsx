@@ -122,7 +122,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
       active: parseInt(formData.active),
     };
 
-    onSubmit(processedData);
+    onSubmit(processedData, selectedModel);
   };
 
   return (

@@ -1,37 +1,62 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { predictCompare } from '../services/api';
+import { predictCompare, predictLogistic, predictRandomForest } from '../services/api';
 import PatientFormEnhanced from '../components/PatientFormEnhanced';
-import PredictionResults from '../components/PredictionResults';
 
 function Predict() {
-  const [predictions, setPredictions] = useState(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handlePredict = async (patientData) => {
+  const handlePredict = async (patientData, selectedModel) => {
     setLoading(true);
     setError(null);
-    setPredictions(null);
 
     try {
-      console.log('Sending patient data:', patientData);
-      const data = await predictCompare(patientData);
-      console.log('Received predictions:', data);
-      setPredictions(data);
+      console.log('=== PREDICTION REQUEST START ===');
+      console.log('Sending patient data:', JSON.stringify(patientData, null, 2));
+      console.log('Selected model:', selectedModel);
+      
+      let data;
+      let resultRoute;
+      
+      // Call different API based on selected model
+      if (selectedModel === 'logistic') {
+        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/logistic');
+        data = await predictLogistic(patientData);
+        resultRoute = '/results/logistic';
+      } else if (selectedModel === 'randomforest') {
+        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/randomforest');
+        data = await predictRandomForest(patientData);
+        resultRoute = '/results/randomforest';
+      } else {
+        // both models
+        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/compare');
+        data = await predictCompare(patientData);
+        resultRoute = '/results/compare';
+      }
+      
+      console.log('=== PREDICTION REQUEST SUCCESS ===');
+      console.log('Received predictions:', JSON.stringify(data, null, 2));
+      
+      // Navigate to appropriate results page with prediction data
+      navigate(resultRoute, { state: { predictions: data, model: selectedModel } });
     } catch (err) {
-      console.error('Prediction error:', err);
+      console.error('=== PREDICTION REQUEST FAILED ===');
+      console.error('Error:', err);
+      console.error('Error message:', err.message);
+      console.error('Error code:', err.code);
       console.error('Error response:', err.response);
-      const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || 'Failed to get predictions. Please try again.';
+      console.error('Error config:', err.config);
+      
+      const errorMessage = err.code === 'ECONNABORTED' 
+        ? 'Request timed out. The server might be sleeping. Please wait a moment and try again.'
+        : err.response?.data?.detail || err.response?.data?.message || err.message || 'Failed to get predictions. Please try again.';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleReset = () => {
-    setPredictions(null);
-    setError(null);
   };
 
   return (
@@ -108,12 +133,6 @@ function Predict() {
                   </motion.div>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            {predictions && !loading && (
-              <PredictionResults predictions={predictions} onReset={handleReset} />
             )}
           </AnimatePresence>
         </motion.div>

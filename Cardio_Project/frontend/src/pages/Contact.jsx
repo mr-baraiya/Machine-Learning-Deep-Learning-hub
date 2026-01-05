@@ -39,10 +39,10 @@ function Contact() {
 
     try {
       const response = await emailjs.send(
-        'service_ef4l8lb',    // Service ID
-        'template_0evqhzo',   // Template ID
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
         templateParams,
-        'vcfvtcxuQfUbBL4ze'   // Public Key
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
 
       console.log('Email sent successfully:', response);
