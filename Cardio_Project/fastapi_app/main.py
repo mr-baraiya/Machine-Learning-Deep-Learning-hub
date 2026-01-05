@@ -1,24 +1,18 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import numpy as np
-import joblib
 import os
 import requests
+import joblib
+import numpy as np
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
-app = FastAPI(title="Cardiovascular Disease Prediction API")
+# --------------------------------------------------
+# CONFIG
+# --------------------------------------------------
 
-# CORS middleware to allow React frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Model files configuration
 MODEL_DIR = "models"
+os.makedirs(MODEL_DIR, exist_ok=True)
+
 BASE_URL = "https://huggingface.co/mr-baraiya/cardio-disease-model/resolve/main"
 
 MODEL_FILES = {
@@ -29,15 +23,37 @@ MODEL_FILES = {
     "logistic_bias.npy": f"{BASE_URL}/logistic_bias.npy",
 }
 
-# Global variables for models
+# Global model variables
 rf_model = None
-scaler_num = None
 scaler_int = None
+scaler_num = None
 lr_weights = None
 lr_bias = None
 
-def download_model_file(filename: str, url: str):
-    """Download a model file if it doesn't exist"""
+# --------------------------------------------------
+# APP
+# --------------------------------------------------
+
+app = FastAPI(
+    title="Cardio Disease Prediction API",
+    description="Random Forest & Logistic Regression based Cardio Disease Prediction",
+    version="1.0.0"
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --------------------------------------------------
+# UTILS
+# --------------------------------------------------
+
+def download_model_file(filename: str, url: str) -> bool:
     filepath = os.path.join(MODEL_DIR, filename)
 
     if os.path.exists(filepath):
@@ -45,103 +61,104 @@ def download_model_file(filename: str, url: str):
         return True
 
     print(f"[DOWNLOAD] Downloading {filename}...")
-
     try:
-        os.makedirs(MODEL_DIR, exist_ok=True)
+        r = requests.get(url, stream=True, timeout=600)
+        r.raise_for_status()
 
-        with requests.get(
-            url,
-            stream=True,
-            allow_redirects=True,
-            timeout=600,
-            headers={
-                "User-Agent": "Mozilla/5.0",
-                "Accept": "application/octet-stream"
-            }
-        ) as r:
-            r.raise_for_status()
-            with open(filepath, "wb") as f:
-                for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1 MB
-                    if chunk:
-                        f.write(chunk)
+        with open(filepath, "wb") as f:
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    f.write(chunk)
 
-        print(f"[OK] {filename} downloaded successfully")
+        print(f"[OK] {filename} downloaded")
         return True
-
     except Exception as e:
         print(f"[ERROR] Failed to download {filename}: {e}")
         return False
 
-@app.on_event("startup")
-async def load_models():
-    """Download and load models on startup"""
-    global rf_model, scaler_num, scaler_int, lr_weights, lr_bias
-    
-    try:
-        # Try to download models if needed (optional - uses local if available)
-        print("\n[CHECKING] Checking model files...")
-        for filename, url in MODEL_FILES.items():
-            download_model_file(filename, url)
-        
-        # Load all models from local directory
-        print("\n[LOADING] Loading models...")
-        rf_model = joblib.load(os.path.join(MODEL_DIR, "random_forest_model.pkl"))
-        scaler_num = joblib.load(os.path.join(MODEL_DIR, "scaler_num.pkl"))
-        scaler_int = joblib.load(os.path.join(MODEL_DIR, "scaler_int.pkl"))
-        lr_weights = np.load(os.path.join(MODEL_DIR, "logistic_weights.npy"))
-        lr_bias = np.load(os.path.join(MODEL_DIR, "logistic_bias.npy"))
-        
-        print("[SUCCESS] All models loaded successfully!\n")
-        
-    except Exception as e:
-        print(f"[ERROR] Error loading models: {e}")
-        raise
-
-class PatientData(BaseModel):
-    age: float
-    gender: int
-    height: float
-    weight: float
-    ap_hi: float
-    ap_lo: float
-    cholesterol: int
-    gluc: int
-    smoke: int
-    alco: int
-    active: int
-
-class PredictionResponse(BaseModel):
-    model_type: str
-    prediction: int
-    probability: float
-    risk_level: str
-    message: str
 
 def sigmoid(z):
+    z = np.clip(z, -500, 500)
     return 1 / (1 + np.exp(-z))
 
-def preprocess_input(data: PatientData):
-    # Convert age from years to proper format
+
+# --------------------------------------------------
+# INPUT SCHEMA (VALIDATION)
+# --------------------------------------------------
+
+class PatientData(BaseModel):
+    age: float = Field(..., gt=0, lt=120, description="Age in years")
+    gender: int = Field(..., ge=1, le=2, description="1=Female, 2=Male")
+    height: float = Field(..., gt=50, description="Height in cm")
+    weight: float = Field(..., gt=20, description="Weight in kg")
+    ap_hi: float = Field(..., gt=50, description="Systolic blood pressure")
+    ap_lo: float = Field(..., gt=30, description="Diastolic blood pressure")
+    cholesterol: int = Field(..., ge=1, le=3, description="1=Normal, 2=Above normal, 3=Well above")
+    gluc: int = Field(..., ge=1, le=3, description="1=Normal, 2=Above normal, 3=Well above")
+    smoke: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
+    alco: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
+    active: int = Field(..., ge=0, le=1, description="0=No, 1=Yes")
+
+# --------------------------------------------------
+# LOAD MODELS ON STARTUP
+# --------------------------------------------------
+
+@app.on_event("startup")
+def load_models():
+    print("[CHECKING] Checking model files...")
+
+    for filename, url in MODEL_FILES.items():
+        ok = download_model_file(filename, url)
+        if not ok:
+            raise RuntimeError(f"Startup failed: could not download {filename}")
+
+    print("[LOADING] Loading models...")
+
+    global rf_model, scaler_int, scaler_num, lr_weights, lr_bias
+
+    rf_model = joblib.load(os.path.join(MODEL_DIR, "random_forest_model.pkl"))
+    scaler_int = joblib.load(os.path.join(MODEL_DIR, "scaler_int.pkl"))
+    scaler_num = joblib.load(os.path.join(MODEL_DIR, "scaler_num.pkl"))
+    lr_weights = np.load(os.path.join(MODEL_DIR, "logistic_weights.npy"))
+    lr_bias = np.load(os.path.join(MODEL_DIR, "logistic_bias.npy"))
+
+    print("[SUCCESS] All models loaded successfully!")
+
+# --------------------------------------------------
+# HEALTH CHECK
+# --------------------------------------------------
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "models_loaded": True,
+        "model_directory": MODEL_DIR
+    }
+
+# --------------------------------------------------
+# FEATURE PREPROCESSING
+# --------------------------------------------------
+
+def preprocess(data: PatientData):
     age_years = data.age
-    
-    # Calculate BMI
     bmi = data.weight / ((data.height / 100) ** 2)
     
-    # Create interaction features
+    # Interaction features
     smoke_age = data.smoke * age_years
     smoke_bmi = data.smoke * bmi
     alco_age = data.alco * age_years
     alco_bmi = data.alco * bmi
     
-    # Prepare features for scaling
+    # Numerical features
     num_features = np.array([[age_years, data.ap_hi, data.ap_lo, bmi]])
-    int_features = np.array([[smoke_age, smoke_bmi, alco_age, alco_bmi]])
-    
-    # Scale features
     num_scaled = scaler_num.transform(num_features)
+    
+    # Interaction features
+    int_features = np.array([[smoke_age, smoke_bmi, alco_age, alco_bmi]])
     int_scaled = scaler_int.transform(int_features)
     
-    # Combine all features in correct order
+    # Combine all features
     features = np.concatenate([
         num_scaled.flatten(),
         [data.cholesterol, data.gluc, data.smoke, data.alco, data.active],
@@ -150,119 +167,67 @@ def preprocess_input(data: PatientData):
     
     return features.reshape(1, -1)
 
-def get_risk_level(probability: float) -> str:
-    if probability < 0.3:
-        return "Low Risk"
-    elif probability < 0.6:
-        return "Moderate Risk"
-    else:
-        return "High Risk"
+# --------------------------------------------------
+# PREDICTION ENDPOINTS
+# --------------------------------------------------
 
-@app.get("/")
-def root():
-    return {
-        "message": "Cardiovascular Disease Prediction API",
-        "endpoints": {
-            "/predict/logistic": "Logistic Regression prediction",
-            "/predict/randomforest": "Random Forest prediction",
-            "/health": "API health check"
-        }
-    }
-
-@app.get("/health")
-def health_check():
-    models_loaded = all([
-        rf_model is not None,
-        scaler_num is not None,
-        scaler_int is not None,
-        lr_weights is not None,
-        lr_bias is not None
-    ])
-    
-    return {
-        "status": "healthy" if models_loaded else "unhealthy",
-        "models_loaded": models_loaded,
-        "model_directory": MODEL_DIR
-    }
-
-@app.post("/predict/logistic", response_model=PredictionResponse)
-def predict_logistic(data: PatientData):
-    try:
-        # Preprocess input
-        features = preprocess_input(data)
-        
-        # Make prediction using logistic regression
-        z = np.dot(features, lr_weights) + lr_bias
-        probability = float(sigmoid(z)[0])
-        prediction = 1 if probability >= 0.5 else 0
-        
-        risk_level = get_risk_level(probability)
-        
-        message = (
-            "Patient is at risk of cardiovascular disease." 
-            if prediction == 1 
-            else "Patient is not at significant risk."
-        )
-        
-        return PredictionResponse(
-            model_type="Logistic Regression",
-            prediction=prediction,
-            probability=round(probability, 4),
-            risk_level=risk_level,
-            message=message
-        )
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/predict/randomforest", response_model=PredictionResponse)
+@app.post("/predict/randomforest")
 def predict_random_forest(data: PatientData):
     try:
-        # Preprocess input
-        features = preprocess_input(data)
-        
-        # Make prediction using random forest
-        prediction = int(rf_model.predict(features)[0])
-        probability = float(rf_model.predict_proba(features)[0][1])
-        
-        risk_level = get_risk_level(probability)
-        
-        message = (
-            "Patient is at risk of cardiovascular disease." 
-            if prediction == 1 
-            else "Patient is not at significant risk."
-        )
-        
-        return PredictionResponse(
-            model_type="Random Forest",
-            prediction=prediction,
-            probability=round(probability, 4),
-            risk_level=risk_level,
-            message=message
-        )
-    
+        features = preprocess(data)
+        prob = rf_model.predict_proba(features)[0][1]
+        prediction = int(prob >= 0.5)
+
+        return {
+            "model": "Random Forest",
+            "prediction": prediction,
+            "probability": round(float(prob), 4),
+            "risk": "High Risk" if prediction else "Low Risk"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict/logistic")
+def predict_logistic(data: PatientData):
+    try:
+        features = preprocess(data)
+        z = np.dot(features, lr_weights) + lr_bias
+        prob = sigmoid(z)[0]
+        prediction = int(prob >= 0.5)
+
+        return {
+            "model": "Logistic Regression",
+            "prediction": prediction,
+            "probability": round(float(prob), 4),
+            "risk": "High Risk" if prediction else "Low Risk"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/predict/compare")
 def compare_models(data: PatientData):
     try:
-        # Get predictions from both models
-        lr_result = predict_logistic(data)
-        rf_result = predict_random_forest(data)
-        
+        rf = predict_random_forest(data)
+        lr = predict_logistic(data)
+
         return {
-            "logistic_regression": lr_result.dict(),
-            "random_forest": rf_result.dict(),
+            "random_forest": rf,
+            "logistic_regression": lr,
             "recommendation": (
-                "Both models agree on the prediction." 
-                if lr_result.prediction == rf_result.prediction 
+                "Both models agree on the prediction."
+                if rf["prediction"] == lr["prediction"]
                 else "Models disagree - consult a medical professional."
             )
         }
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --------------------------------------------------
+# RUN SERVER
+# --------------------------------------------------
 
 if __name__ == "__main__":
     import uvicorn
