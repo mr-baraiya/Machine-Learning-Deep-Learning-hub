@@ -116,7 +116,7 @@ function PatientFormEnhanced({ onSubmit, loading }) {
 
   const handleDemoFill = (riskType) => {
     setFormData(demoData[riskType]);
-    setPersonalDetails(demoPersonalDetails);
+    // Don't fill personal details - user must enter their own
     setErrors({});
   };
 
@@ -126,19 +126,48 @@ function PatientFormEnhanced({ onSubmit, loading }) {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error for this field when user types
+    if (errors[name]) {
+      const newErrors = { ...errors };
+      delete newErrors[name];
+      setErrors(newErrors);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     // Check if all required fields are filled
-    if (!formData.age || !formData.height || !formData.weight || !formData.ap_hi || !formData.ap_lo) {
-      const newErrors = {};
-      if (!formData.age) newErrors.age = 'Age is required';
-      if (!formData.height) newErrors.height = 'Height is required';
-      if (!formData.weight) newErrors.weight = 'Weight is required';
-      if (!formData.ap_hi) newErrors.ap_hi = 'Systolic blood pressure is required';
-      if (!formData.ap_lo) newErrors.ap_lo = 'Diastolic blood pressure is required';
+    const newErrors = {};
+    
+    // Validate personal details
+    if (!personalDetails.name || !personalDetails.name.trim()) {
+      newErrors.name = 'Full name is required';
+    }
+    
+    if (!personalDetails.email || !personalDetails.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalDetails.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!personalDetails.mobile || !personalDetails.mobile.trim()) {
+      newErrors.mobile = 'Mobile number is required';
+    }
+    
+    if (!personalDetails.address || !personalDetails.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+    
+    // Validate health metrics
+    if (!formData.age) newErrors.age = 'Age is required';
+    if (!formData.height) newErrors.height = 'Height is required';
+    if (!formData.weight) newErrors.weight = 'Weight is required';
+    if (!formData.ap_hi) newErrors.ap_hi = 'Systolic blood pressure is required';
+    if (!formData.ap_lo) newErrors.ap_lo = 'Diastolic blood pressure is required';
+    
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -196,55 +225,91 @@ function PatientFormEnhanced({ onSubmit, loading }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="name"
                 value={personalDetails.name}
                 onChange={handlePersonalChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="John Doe"
+                required
               />
+              {errors.name && (
+                <div className="flex items-start gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{errors.name}</span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 name="email"
                 value={personalDetails.email}
                 onChange={handlePersonalChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="john@example.com"
+                required
               />
+              {errors.email && (
+                <div className="flex items-start gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{errors.email}</span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mobile Number
+                Mobile Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 name="mobile"
                 value={personalDetails.mobile}
                 onChange={handlePersonalChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text ${
+                  errors.mobile ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="+1 (555) 123-4567"
+                required
               />
+              {errors.mobile && (
+                <div className="flex items-start gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{errors.mobile}</span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address
+                Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="address"
                 value={personalDetails.address}
                 onChange={handlePersonalChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition cursor-text ${
+                  errors.address ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="123 Main Street, City, State ZIP"
+                required
               />
+              {errors.address && (
+                <div className="flex items-start gap-2 mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{errors.address}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
