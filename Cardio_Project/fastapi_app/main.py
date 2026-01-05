@@ -1,11 +1,9 @@
 import os
+import base64
 import requests
 import joblib
 import numpy as np
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
+import resend
 from datetime import datetime
 from io import BytesIO
 from dotenv import load_dotenv
@@ -450,14 +448,14 @@ def generate_pdf_report(patient_name: str, patient_data: PatientData,
 
 
 # --------------------------------------------------
-# SMTP EMAIL UTILITY
+# RESEND EMAIL UTILITY
 # --------------------------------------------------
 
-def send_email_with_attachment(to_email: str, patient_name: str, 
-                               pdf_buffer: BytesIO, risk_level: str,
-                               model_type: str, probability: float) -> bool:
+def send_email_with_resend(to_email: str, patient_name: str,
+                           pdf_buffer: BytesIO, risk_level: str,
+                           model_type: str, probability: float) -> bool:
     """
-    Send email with PDF report attachment using SMTP
+    Send email with PDF report attachment using Resend
     
     Args:
         to_email: Recipient email address
@@ -470,68 +468,48 @@ def send_email_with_attachment(to_email: str, patient_name: str,
     Returns:
         bool: True if email sent successfully, False otherwise
     """
-    # Get SMTP credentials from environment variables
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    smtp_from = os.getenv("SMTP_FROM", smtp_user)
-    
-    # Validate SMTP configuration
-    if not smtp_user or not smtp_password:
-        raise ValueError("SMTP credentials not configured in environment variables")
-    
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="RESEND_API_KEY is not configured")
+
+    resend.api_key = api_key
+
+    pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
+    subject = f"CardioSense Health Report - {patient_name}"
+
     try:
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = f"CardioSense Support <{smtp_from}>"
-        msg['To'] = to_email
-        msg['Subject'] = f"CardioSense Health Report - {patient_name}"
-        
-        # Email body
-        body = f"""
-Dear {patient_name},
+        resend.Emails.send({
+            "from": "CardioSense <reports@resend.dev>",
+            "to": to_email,
+            "subject": subject,
+            "html": f"""
+                <p>Dear {patient_name},</p>
+                <p>Thank you for using the CardioSense cardiovascular risk assessment.</p>
+                <p><b>Assessment Summary:</b></p>
+                <ul>
+                  <li>Model Used: {model_type}</li>
+                  <li>Risk Level: {risk_level}</li>
+                  <li>Probability: {probability * 100:.2f}%</li>
+                  <li>Report Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+                </ul>
+                <p>Your full report is attached as a PDF.</p>
+                <p><b>Disclaimer:</b> This is an AI-generated educational report and should NOT be used for medical diagnosis. Please consult qualified healthcare professionals.</p>
+                <p>Best regards,<br/>CardioSense Support Team</p>
+                <p style="font-size: 12px; color: #6b7280;">This is an automated message. Please do not reply.</p>
+            """,
+            "attachments": [
+                {
+                    "filename": f"CardioSense_Report_{patient_name.replace(' ', '_')}.pdf",
+                    "content": pdf_base64
+                }
+            ]
+        })
 
-Thank you for using CardioSense cardiovascular disease prediction system.
-
-Your health assessment report is attached to this email.
-
-Assessment Summary:
-- Model Used: {model_type}
-- Risk Level: {risk_level}
-- Probability: {probability * 100:.2f}%
-- Report Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-
-IMPORTANT:
-This is an AI-generated educational report and should NOT be used for medical diagnosis.
-Please consult qualified healthcare professionals.
-
-Best regards,
-CardioSense Support Team
-
----
-This is an automated message. Please do not reply.
-"""
-        
-        msg.attach(MIMEText(body, 'plain'))
-        
-        # Attach PDF
-        pdf_attachment = MIMEApplication(pdf_buffer.read(), _subtype="pdf")
-        pdf_attachment.add_header('Content-Disposition', 'attachment', 
-                                 filename=f"CardioSense_Report_{patient_name.replace(' ', '_')}.pdf")
-        msg.attach(pdf_attachment)
-        
-        # Send email
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.send_message(msg)
-        
-        print(f"[EMAIL] Successfully sent report to {to_email}")
+        print(f"[EMAIL] Successfully sent report to {to_email} via Resend")
         return True
-        
+
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {str(e)}")
+        print(f"[EMAIL ERROR] Failed to send email via Resend: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
 
@@ -546,7 +524,7 @@ def send_report(request: EmailReportRequest):
     
     This endpoint:
     1. Generates a professional PDF report with patient data and predictions
-    2. Sends the report via SMTP email with secure credentials
+    2. Sends the report via Resend email API with secure credentials
     3. Returns confirmation of delivery
     """
     try:
@@ -562,8 +540,8 @@ def send_report(request: EmailReportRequest):
             prediction_result=request.prediction_result
         )
         
-        # Send email with PDF attachment
-        send_email_with_attachment(
+        # Send email with PDF attachment via Resend
+        send_email_with_resend(
             to_email=request.to_email,
             patient_name=request.patient_name,
             pdf_buffer=pdf_buffer,

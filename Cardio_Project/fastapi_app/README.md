@@ -24,7 +24,7 @@ CardioSense Backend is a production-ready FastAPI service that provides cardiova
 - **Dual ML Models**: Random Forest (95% accuracy) & Logistic Regression (92% accuracy)
 - **Real-time Predictions**: Fast inference with pre-trained models
 - **PDF Report Generation**: Professional health reports with ReportLab
-- **Email Service**: SMTP-based email delivery with PDF attachments
+- **Email Service**: Resend-based email delivery with PDF attachments
 - **Auto Model Loading**: Downloads models from Hugging Face on startup
 - **CORS Enabled**: Seamless frontend integration
 
@@ -39,7 +39,7 @@ CardioSense Backend is a production-ready FastAPI service that provides cardiova
 - **Preprocessing**: StandardScaler for numerical and integer features
 
 ### Email Service
-- **SMTP Integration**: Gmail-based email delivery
+- **Resend Integration**: API-based email delivery
 - **PDF Attachments**: Professional health reports
 - **HTML Email Body**: Rich formatted emails
 - **Error Handling**: Comprehensive error management
@@ -73,6 +73,7 @@ CardioSense Backend is a production-ready FastAPI service that provides cardiova
 | ReportLab | 4.0.0+ | PDF generation |
 | python-dotenv | 1.0.0+ | Environment variables |
 | email-validator | 2.0.0+ | Email validation |
+| Resend | 0.8.0+ | Email delivery |
 
 ---
 
@@ -81,7 +82,7 @@ CardioSense Backend is a production-ready FastAPI service that provides cardiova
 ### Prerequisites
 - Python 3.13 or higher
 - pip (Python package manager)
-- Gmail account (for SMTP email service)
+- Resend account (for email service)
 - Git
 
 ### 1. Clone Repository
@@ -110,18 +111,12 @@ pip install -r requirements.txt
 Create `.env` file in `fastapi_app/` directory:
 
 ```env
-# SMTP Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM=your-email@gmail.com
+# Resend Email Configuration
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM=CardioSense <reports@resend.dev>
 ```
 
-**📝 Note**: Use Gmail App Password (not regular password)
-- Go to: [Google Account Security](https://myaccount.google.com/security)
-- Enable 2-Step Verification
-- Generate App Password: App Passwords → Select Mail
+**📝 Note**: Create an API key in your Resend dashboard and verify the sending domain or use a Resend-provided address.
 
 ### 5. Run Server
 ```bash
@@ -298,23 +293,19 @@ Generate PDF and send via email.
 
 ## Email Configuration
 
-### Gmail Setup
+### Resend Setup
 
-1. **Enable 2-Step Verification**
-   - Go to [Google Account Security](https://myaccount.google.com/security)
-   - Enable 2-Step Verification
+1. **Create API Key**
+  - In Resend dashboard, create an API key.
 
-2. **Generate App Password**
-   - Go to App Passwords section
-   - Select "Mail" and your device
-   - Copy the 16-character password
+2. **Verify From Address**
+  - Use the verified sender/domain (e.g., `CardioSense <reports@cardiosense.ai>`).
 
 3. **Update .env File**
-   ```env
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASSWORD=abcd efgh ijkl mnop
-   SMTP_FROM=your-email@gmail.com
-   ```
+  ```env
+  RESEND_API_KEY=your_resend_api_key
+  RESEND_FROM=CardioSense <reports@resend.dev>
+  ```
 
 ### Test Email
 Use Swagger UI at `/docs` to test email functionality.
@@ -337,11 +328,8 @@ Use Swagger UI at `/docs` to test email functionality.
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 3. **Add Environment Variables**
-   - SMTP_HOST
-   - SMTP_PORT
-   - SMTP_USER
-   - SMTP_PASSWORD
-   - SMTP_FROM
+  - RESEND_API_KEY
+  - RESEND_FROM
 
 4. **Deploy**
    - Click "Create Web Service"
