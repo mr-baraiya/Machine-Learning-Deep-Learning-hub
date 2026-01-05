@@ -39,35 +39,37 @@ lr_bias = None
 def download_model_file(filename: str, url: str):
     """Download a model file if it doesn't exist"""
     filepath = os.path.join(MODEL_DIR, filename)
-    
+
     if os.path.exists(filepath):
         print(f"[OK] {filename} already exists")
         return True
-    
+
     print(f"[DOWNLOAD] Downloading {filename}...")
+
     try:
-        response = requests.get(url, stream=True, timeout=300)
-        response.raise_for_status()
-        
-        # Create models directory if it doesn't exist
         os.makedirs(MODEL_DIR, exist_ok=True)
-        
-        # Download with progress
-        total_size = int(response.headers.get('content-length', 0))
-        with open(filepath, 'wb') as f:
-            if total_size == 0:
-                f.write(response.content)
-            else:
-                downloaded = 0
-                for chunk in response.iter_content(chunk_size=8192):
+
+        with requests.get(
+            url,
+            stream=True,
+            allow_redirects=True,
+            timeout=600,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/octet-stream"
+            }
+        ) as r:
+            r.raise_for_status()
+            with open(filepath, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1 MB
                     if chunk:
                         f.write(chunk)
-                        downloaded += len(chunk)
-        
+
         print(f"[OK] {filename} downloaded successfully")
         return True
+
     except Exception as e:
-        print(f"[WARNING] Could not download {filename}: {e}")
+        print(f"[ERROR] Failed to download {filename}: {e}")
         return False
 
 @app.on_event("startup")
