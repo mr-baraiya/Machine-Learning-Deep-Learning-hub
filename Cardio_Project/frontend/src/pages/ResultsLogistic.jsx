@@ -14,6 +14,29 @@ function ResultsLogistic() {
   const [emailSending, setEmailSending] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailStatus, setEmailStatus] = useState({ type: '', message: '' });
+  const demoModeNotice = 'Report Generated Successfully.\nEmail delivery is currently in demo mode. Please download the report or contact the project owner.';
+  const statusConfig = {
+    success: {
+      title: 'Email Sent!',
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600',
+      Icon: CheckCircle
+    },
+    demo: {
+      title: 'Report Generated',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
+      Icon: CheckCircle
+    },
+    error: {
+      title: 'Email Failed',
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-600',
+      Icon: XCircle
+    }
+  };
+  const currentStatusConfig = statusConfig[emailStatus.type] || statusConfig.error;
+  const IconComponent = currentStatusConfig.Icon;
 
   // Redirect to predict page if no predictions data
   if (!predictions) {
@@ -163,10 +186,14 @@ function ResultsLogistic() {
       setShowEmailModal(true);
     } catch (error) {
       console.error('Email sending error:', error);
-      setEmailStatus({
-        type: 'error',
-        message: error.message || 'Failed to send email. Please try downloading the PDF instead.'
-      });
+      if (error.isDemoMode || error.message === 'EMAIL_DEMO_MODE') {
+        setEmailStatus({ type: 'demo', message: demoModeNotice });
+      } else {
+        setEmailStatus({
+          type: 'error',
+          message: error.message || 'Failed to send email. Please try downloading the PDF instead.'
+        });
+      }
       setShowEmailModal(true);
     } finally {
       setEmailSending(false);
@@ -363,23 +390,11 @@ function ResultsLogistic() {
                 </button>
 
                 <div className="text-center">
-                  {emailStatus.type === 'success' ? (
-                    <>
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-10 h-10 text-green-600" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">Email Sent!</h3>
-                      <p className="text-gray-600 mb-6">{emailStatus.message}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <XCircle className="w-10 h-10 text-red-600" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">Email Failed</h3>
-                      <p className="text-gray-600 mb-6">{emailStatus.message}</p>
-                    </>
-                  )}
+                  <div className={`w-16 h-16 ${currentStatusConfig.iconBg} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <IconComponent className={`w-10 h-10 ${currentStatusConfig.iconColor}`} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{currentStatusConfig.title}</h3>
+                  <p className="text-gray-600 mb-6 whitespace-pre-line">{emailStatus.message}</p>
                   <button
                     onClick={() => setShowEmailModal(false)}
                     className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"

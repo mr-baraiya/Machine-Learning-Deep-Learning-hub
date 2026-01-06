@@ -14,6 +14,25 @@ function ResultsRandomForest() {
   const [emailSending, setEmailSending] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailStatus, setEmailStatus] = useState({ type: '', message: '' });
+  const demoModeNotice = 'Report Generated Successfully.\nEmail delivery is currently in demo mode. Please download the report or contact the project owner.';
+  const statusThemes = {
+    success: {
+      title: 'Success!',
+      textColor: 'text-green-600',
+      button: 'bg-green-600 hover:bg-green-700'
+    },
+    demo: {
+      title: 'Report Generated',
+      textColor: 'text-amber-600',
+      button: 'bg-amber-500 hover:bg-amber-600'
+    },
+    error: {
+      title: 'Error',
+      textColor: 'text-red-600',
+      button: 'bg-red-600 hover:bg-red-700'
+    }
+  };
+  const currentStatusTheme = statusThemes[emailStatus.type] || statusThemes.error;
 
   // Redirect to predict page if no predictions data
   if (!predictions) {
@@ -58,10 +77,14 @@ function ResultsRandomForest() {
       setShowEmailModal(true);
     } catch (error) {
       console.error('Email sending failed:', error);
-      setEmailStatus({
-        type: 'error',
-        message: error.response?.data?.detail || error.message || 'Failed to send email. Please try again.'
-      });
+      if (error.isDemoMode || error.message === 'EMAIL_DEMO_MODE') {
+        setEmailStatus({ type: 'demo', message: demoModeNotice });
+      } else {
+        setEmailStatus({
+          type: 'error',
+          message: error.response?.data?.detail || error.message || 'Failed to send email. Please try again.'
+        });
+      }
       setShowEmailModal(true);
     } finally {
       setEmailSending(false);
@@ -357,10 +380,8 @@ function ResultsRandomForest() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-2xl font-bold ${
-                    emailStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {emailStatus.type === 'success' ? 'Success!' : 'Error'}
+                  <h3 className={`text-2xl font-bold ${currentStatusTheme.textColor}`}>
+                    {currentStatusTheme.title}
                   </h3>
                   <button
                     onClick={() => setShowEmailModal(false)}
@@ -369,14 +390,10 @@ function ResultsRandomForest() {
                     <X className="w-6 h-6 text-gray-600" />
                   </button>
                 </div>
-                <p className="text-gray-700 mb-6">{emailStatus.message}</p>
+                <p className="text-gray-700 mb-6 whitespace-pre-line">{emailStatus.message}</p>
                 <button
                   onClick={() => setShowEmailModal(false)}
-                  className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
-                    emailStatus.type === 'success' 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-red-600 hover:bg-red-700'
-                  }`}
+                  className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${currentStatusTheme.button}`}
                 >
                   Close
                 </button>

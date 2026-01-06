@@ -3,6 +3,12 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://cardio-fastapi-8ijy.onrender.com';
 
+// Detect demo-mode restrictions from the email provider so we can show a friendlier message
+const isDemoModeEmailError = (message = '') => {
+  const normalized = message.toLowerCase();
+  return normalized.includes('testing emails') || normalized.includes('demo mode');
+};
+
 /**
  * Send PDF report via backend SMTP (with PDF attachment)
  * @param {string} toEmail - Recipient email address
@@ -39,7 +45,19 @@ export const sendReportViaBackend = async (toEmail, patientName, modelType, pati
   } catch (error) {
     console.error('Backend email service failed:', error);
     if (error.response) {
-      throw new Error(error.response.data.detail || 'Failed to send email via backend');
+      const detail = error.response.data?.detail || '';
+      if (isDemoModeEmailError(detail)) {
+        const demoError = new Error('EMAIL_DEMO_MODE');
+        demoError.isDemoMode = true;
+        demoError.detail = detail;
+        throw demoError;
+      }
+      throw new Error(detail || 'Failed to send email via backend');
+    }
+    if (error.message && isDemoModeEmailError(error.message)) {
+      const demoError = new Error('EMAIL_DEMO_MODE');
+      demoError.isDemoMode = true;
+      throw demoError;
     }
     throw error;
   }
