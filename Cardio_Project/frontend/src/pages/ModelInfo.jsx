@@ -62,7 +62,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Random Forest</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-green-600" />
-                    <p className="text-green-600 font-semibold">70.56% Accuracy</p>
+                    <p className="text-green-600 font-semibold">74.74% Accuracy</p>
                   </div>
                 </div>
               </div>
@@ -190,7 +190,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Logistic Regression</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-purple-600" />
-                    <p className="text-purple-600 font-semibold">72.77% Accuracy</p>
+                    <p className="text-purple-600 font-semibold">72.93% Accuracy</p>
                   </div>
                 </div>
               </div>
@@ -582,8 +582,8 @@ function ModelInfo() {
                   <tbody className="divide-y divide-gray-100">
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">Accuracy</td>
-                      <td className="px-6 py-4 text-lg font-bold text-green-600">70.56%</td>
-                      <td className="px-6 py-4 text-lg font-bold text-purple-600">72.77%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-green-600">74.74%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-purple-600">72.93%</td>
                       <td className="px-6 py-4"><span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">Logistic Regression</span></td>
                     </tr>
                     <tr className="hover:bg-gray-50">

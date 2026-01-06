@@ -26,7 +26,7 @@ CardioSense is a comprehensive cardiovascular disease risk prediction system tha
 
 ### Key Features
 
-- **Dual ML Models**: Random Forest (70.56% accuracy) & Logistic Regression (72.77% accuracy)
+- **Dual ML Models**: Random Forest (Test accuracy: 0.747, CV: 0.703 ± 0.004) & Logistic Regression (Test accuracy: 0.729, CV: 0.728 ± 0.004)
 - **Full-Stack Application**: React frontend + FastAPI backend
 - **Real-time Predictions**: Instant risk assessment with probability scores
 - **PDF Reports**: Professional health reports with ReportLab
@@ -87,8 +87,8 @@ Professional health reports with patient data, predictions, and recommendations 
 - **python-dotenv 1.0.0+**: Environment management
 
 ### Machine Learning
-- **Random Forest Classifier**: Ensemble model (70.56% accuracy)
-- **Logistic Regression**: Custom implementation (72.77% accuracy)
+- **Random Forest Classifier**: Ensemble model (Test accuracy: 0.747, CV: 0.703 ± 0.004)
+- **Logistic Regression**: Custom implementation (Test accuracy: 0.729, CV: 0.728 ± 0.004)
 - **StandardScaler**: Feature normalization
 - **Feature Engineering**: BMI calculation, interaction features
 
@@ -243,7 +243,7 @@ Frontend will be available at: `http://localhost:5173`
 
 ### Random Forest Classifier
 - **Type**: Ensemble Learning
-- **Accuracy**: 70.56%
+- **Accuracy**: 74.74%
 - **Features**: 13 (original + engineered)
 - **Trees**: 100 estimators
 - **Max Depth**: None
@@ -251,7 +251,7 @@ Frontend will be available at: `http://localhost:5173`
 
 ### Logistic Regression (Custom)
 - **Type**: Binary Classification
-- **Accuracy**: 72.77%
+- **Accuracy**: 72.93%
 - **Implementation**: From scratch (NumPy)
 - **Features**: 13 (original + engineered)
 - **Regularization**: L2 (Ridge)
