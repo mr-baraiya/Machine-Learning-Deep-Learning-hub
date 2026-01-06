@@ -21,7 +21,7 @@
 
 CardioSense Backend is a production-ready FastAPI service that provides cardiovascular disease risk prediction using machine learning models. The API features:
 
-- **Dual ML Models**: Random Forest (95% accuracy) & Logistic Regression (92% accuracy)
+- **Dual ML Models**: Random Forest (70.56% accuracy) & Logistic Regression (72.77% accuracy)
 - **Real-time Predictions**: Fast inference with pre-trained models
 - **PDF Report Generation**: Professional health reports with ReportLab
 - **Email Service**: Resend-based email delivery with PDF attachments
@@ -33,8 +33,8 @@ CardioSense Backend is a production-ready FastAPI service that provides cardiova
 ## Features
 
 ### Machine Learning
-- **Random Forest Classifier**: Ensemble model with 95% accuracy
-- **Logistic Regression**: Custom implementation with 92% accuracy
+- **Random Forest Classifier**: Ensemble model with 70.56% accuracy
+- **Logistic Regression**: Custom implementation with 72.77% accuracy
 - **Feature Engineering**: BMI calculation and interaction features
 - **Preprocessing**: StandardScaler for numerical and integer features
 
@@ -154,7 +154,7 @@ Check if server is running.
 ### Random Forest Prediction
 **POST** `/predict/randomforest`
 
-Predict using Random Forest model (95% accuracy).
+Predict using Random Forest model (70.56% accuracy).
 
 **Request Body:**
 ```json
@@ -187,7 +187,7 @@ Predict using Random Forest model (95% accuracy).
 ### Logistic Regression Prediction
 **POST** `/predict/logistic`
 
-Predict using Logistic Regression model (92% accuracy).
+Predict using Logistic Regression model (72.77% accuracy).
 
 **Request Body:** (same as Random Forest)
 

@@ -603,8 +603,8 @@ function PatientFormEnhanced({ onSubmit, loading }) {
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white text-base font-medium cursor-pointer"
           >
             <option value="both">Both Models - Recommended (Compare Results)</option>
-            <option value="logistic">Logistic Regression (92% Accuracy)</option>
-            <option value="random_forest">Random Forest (95% Accuracy)</option>
+            <option value="logistic">Logistic Regression (72.77% Accuracy)</option>
+            <option value="random_forest">Random Forest (70.56% Accuracy)</option>
           </select>
         </div>
 

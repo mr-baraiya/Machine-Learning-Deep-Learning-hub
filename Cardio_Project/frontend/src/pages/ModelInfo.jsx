@@ -62,7 +62,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Random Forest</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-green-600" />
-                    <p className="text-green-600 font-semibold">75% Accuracy</p>
+                    <p className="text-green-600 font-semibold">70.56% Accuracy</p>
                   </div>
                 </div>
               </div>
@@ -190,7 +190,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Logistic Regression</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-purple-600" />
-                    <p className="text-purple-600 font-semibold">72% Accuracy</p>
+                    <p className="text-purple-600 font-semibold">72.77% Accuracy</p>
                   </div>
                 </div>
               </div>
@@ -582,27 +582,27 @@ function ModelInfo() {
                   <tbody className="divide-y divide-gray-100">
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">Accuracy</td>
-                      <td className="px-6 py-4 text-lg font-bold text-green-600">95.2%</td>
-                      <td className="px-6 py-4 text-lg font-bold text-purple-600">92.1%</td>
-                      <td className="px-6 py-4"><span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Random Forest</span></td>
+                      <td className="px-6 py-4 text-lg font-bold text-green-600">70.56%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-purple-600">72.77%</td>
+                      <td className="px-6 py-4"><span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">Logistic Regression</span></td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">Precision</td>
-                      <td className="px-6 py-4 text-lg font-bold text-green-600">94.8%</td>
-                      <td className="px-6 py-4 text-lg font-bold text-purple-600">91.7%</td>
-                      <td className="px-6 py-4"><span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Random Forest</span></td>
+                      <td className="px-6 py-4 text-lg font-bold text-green-600">70.71%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-purple-600">74.52%</td>
+                      <td className="px-6 py-4"><span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">Logistic Regression</span></td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">Recall (Sensitivity)</td>
-                      <td className="px-6 py-4 text-lg font-bold text-green-600">95.5%</td>
-                      <td className="px-6 py-4 text-lg font-bold text-purple-600">92.9%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-green-600">69.15%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-purple-600">68.33%</td>
                       <td className="px-6 py-4"><span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Random Forest</span></td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">F1 Score</td>
-                      <td className="px-6 py-4 text-lg font-bold text-green-600">95.1%</td>
-                      <td className="px-6 py-4 text-lg font-bold text-purple-600">92.3%</td>
-                      <td className="px-6 py-4"><span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Random Forest</span></td>
+                      <td className="px-6 py-4 text-lg font-bold text-green-600">69.92%</td>
+                      <td className="px-6 py-4 text-lg font-bold text-purple-600">71.29%</td>
+                      <td className="px-6 py-4"><span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">Logistic Regression</span></td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">AUC-ROC</td>
