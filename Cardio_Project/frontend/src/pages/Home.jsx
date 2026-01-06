@@ -89,7 +89,7 @@ function Home() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Advanced AI Models</h3>
               <p className="text-gray-600 mb-4">
-                Dual-model approach using Random Forest (95% accuracy) and Logistic Regression (92% accuracy) 
+                Dual-model approach using Random Forest (75% accuracy) and Logistic Regression (72% accuracy) 
                 for comprehensive risk assessment.
               </p>
               <ul className="space-y-2">

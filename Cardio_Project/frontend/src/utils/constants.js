@@ -181,8 +181,8 @@ export const NAV_LINKS = [
 
 // Statistics for home page
 export const STATS = [
-  { value: '95%', label: 'Accuracy', icon: 'Target' },
-  { value: '2', label: 'ML Models', icon: 'Brain' },
+  { value: '75%', label: 'Random Forest accuracy', icon: 'Target' },
+  { value: '72%', label: 'Logistic Regression accuracy', icon: 'TrendingUp' },
   { value: '<1s', label: 'Response Time', icon: 'Zap' },
   { value: '11', label: 'Health Factors', icon: 'BarChart' },
 ];

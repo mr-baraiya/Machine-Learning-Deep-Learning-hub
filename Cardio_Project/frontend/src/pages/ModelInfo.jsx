@@ -62,7 +62,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Random Forest</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-green-600" />
-                    <p className="text-green-600 font-semibold">95% Accuracy</p>
+                    <p className="text-green-600 font-semibold">75% Accuracy</p>
                   </div>
                 </div>
               </div>
@@ -190,7 +190,7 @@ function ModelInfo() {
                   <h2 className="text-2xl font-bold text-gray-900">Logistic Regression</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <Award className="w-4 h-4 text-purple-600" />
-                    <p className="text-purple-600 font-semibold">92% Accuracy</p>
+                    <p className="text-purple-600 font-semibold">72% Accuracy</p>
                   </div>
                 </div>
               </div>

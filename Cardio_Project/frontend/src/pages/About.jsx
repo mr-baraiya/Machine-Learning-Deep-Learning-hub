@@ -38,8 +38,8 @@ function About() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-blue-50 p-6 rounded-xl">
-                <div className="text-3xl font-bold text-blue-600 mb-2">95%</div>
-                <p className="text-sm text-gray-700">Model Accuracy</p>
+                <div className="text-3xl font-bold text-blue-600 mb-2">75% / 72%</div>
+                <p className="text-sm text-gray-700">Model Accuracy (RF / LR)</p>
               </div>
               <div className="bg-green-50 p-6 rounded-xl">
                 <div className="text-3xl font-bold text-green-600 mb-2">70K+</div>
@@ -75,7 +75,7 @@ function About() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Dual Model Approach</h3>
               <p className="text-gray-600 leading-relaxed">
-                Combines Random Forest (95% accuracy) and Logistic Regression (92% accuracy) for 
+                Combines Random Forest (75% accuracy) and Logistic Regression (72% accuracy) for 
                 comprehensive risk assessment with cross-validation.
               </p>
             </div>

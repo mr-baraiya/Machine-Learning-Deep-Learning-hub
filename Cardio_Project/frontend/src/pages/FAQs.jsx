@@ -34,7 +34,7 @@ function FAQs() {
     },
     {
       question: "How accurate are the predictions?",
-      answer: "The Random Forest model achieves approximately 95% accuracy and the Logistic Regression model achieves about 92% accuracy on the test dataset. However, these are academic metrics and should not be used for actual medical diagnosis."
+      answer: "The Random Forest model achieves approximately 75% accuracy and the Logistic Regression model achieves about 72% accuracy on the test dataset. However, these are academic metrics and should not be used for actual medical diagnosis."
     },
     {
       question: "Can I use this for medical diagnosis?",
