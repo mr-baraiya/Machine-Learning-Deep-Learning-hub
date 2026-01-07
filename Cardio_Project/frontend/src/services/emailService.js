@@ -43,7 +43,6 @@ export const sendReportViaBackend = async (toEmail, patientName, modelType, pati
 
     return response.data;
   } catch (error) {
-    console.error('Backend email service failed:', error);
     if (error.response) {
       const detail = error.response.data?.detail || '';
       if (isDemoModeEmailError(detail)) {
@@ -101,7 +100,6 @@ export const sendReportNotification = async (userEmail, userName, reportType, ri
 
     return response;
   } catch (error) {
-    console.error('Email notification failed:', error);
     throw error;
   }
 };

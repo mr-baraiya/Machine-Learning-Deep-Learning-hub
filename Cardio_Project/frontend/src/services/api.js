@@ -17,7 +17,6 @@ export const healthCheck = async () => {
     const response = await api.get('/health');
     return response.data;
   } catch (error) {
-    console.error('Health check failed:', error);
     throw error;
   }
 };
@@ -28,7 +27,6 @@ export const predictRandomForest = async (patientData) => {
     const response = await api.post('/predict/randomforest', patientData);
     return response.data;
   } catch (error) {
-    console.error('Random Forest prediction failed:', error);
     throw error;
   }
 };
@@ -39,7 +37,6 @@ export const predictLogistic = async (patientData) => {
     const response = await api.post('/predict/logistic', patientData);
     return response.data;
   } catch (error) {
-    console.error('Logistic prediction failed:', error);
     throw error;
   }
 };
@@ -50,7 +47,6 @@ export const predictCompare = async (patientData) => {
     const response = await api.post('/predict/compare', patientData);
     return response.data;
   } catch (error) {
-    console.error('Compare prediction failed:', error);
     throw error;
   }
 };

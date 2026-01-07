@@ -45,8 +45,6 @@ function Contact() {
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
 
-      console.log('Email sent successfully:', response);
-
       setStatus({
         type: 'success',
         message: 'Message sent successfully to CardioSense! We\'ll get back to you soon.'
@@ -62,7 +60,6 @@ function Contact() {
         message: ''
       });
     } catch (error) {
-      console.error('EmailJS Error:', error);
       setStatus({
         type: 'error',
         message: 'Failed to send message. Please try again or email us directly.'

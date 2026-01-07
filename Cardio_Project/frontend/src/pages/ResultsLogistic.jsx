@@ -185,7 +185,6 @@ function ResultsLogistic() {
       });
       setShowEmailModal(true);
     } catch (error) {
-      console.error('Email sending error:', error);
       if (error.isDemoMode || error.message === 'EMAIL_DEMO_MODE') {
         setEmailStatus({ type: 'demo', message: demoModeNotice });
       } else {

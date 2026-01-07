@@ -183,6 +183,6 @@ export const NAV_LINKS = [
 export const STATS = [
   { value: '74.74%', label: 'Random Forest accuracy', icon: 'Target' },
   { value: '72.93%', label: 'Logistic Regression accuracy', icon: 'TrendingUp' },
-  { value: '<1s', label: 'Response Time', icon: 'Zap' },
+  { value: '~1s', label: 'Average Response Time', icon: 'Zap' },
   { value: '11', label: 'Health Factors', icon: 'BarChart' },
 ];

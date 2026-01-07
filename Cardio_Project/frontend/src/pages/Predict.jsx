@@ -14,32 +14,21 @@ function Predict() {
     setError(null);
 
     try {
-      console.log('=== PREDICTION REQUEST START ===');
-      console.log('Sending patient data:', JSON.stringify(patientData, null, 2));
-      console.log('Selected model:', selectedModel);
-      console.log('Personal details:', personalDetails);
-      
       let data;
       let resultRoute;
       
       // Call different API based on selected model
       if (selectedModel === 'logistic') {
-        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/logistic');
         data = await predictLogistic(patientData);
         resultRoute = '/results/logistic';
       } else if (selectedModel === 'random_forest') {
-        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/randomforest');
         data = await predictRandomForest(patientData);
         resultRoute = '/results/randomforest';
       } else {
         // both models
-        console.log('API URL:', 'https://cardio-fastapi-8ijy.onrender.com/predict/compare');
         data = await predictCompare(patientData);
         resultRoute = '/results/compare';
       }
-      
-      console.log('=== PREDICTION REQUEST SUCCESS ===');
-      console.log('Received predictions:', JSON.stringify(data, null, 2));
       
       // Navigate to appropriate results page with prediction data, personal details, and patient data
       navigate(resultRoute, { 
@@ -51,13 +40,6 @@ function Predict() {
         } 
       });
     } catch (err) {
-      console.error('=== PREDICTION REQUEST FAILED ===');
-      console.error('Error:', err);
-      console.error('Error message:', err.message);
-      console.error('Error code:', err.code);
-      console.error('Error response:', err.response);
-      console.error('Error config:', err.config);
-      
       const errorMessage = err.code === 'ECONNABORTED' 
         ? 'Request timed out. The server might be sleeping. Please wait a moment and try again.'
         : err.response?.data?.detail || err.response?.data?.message || err.message || 'Failed to get predictions. Please try again.';
