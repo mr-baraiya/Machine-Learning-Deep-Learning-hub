@@ -2,8 +2,8 @@ name: CardioSense API Health Check
 
 on:
   schedule:
-    # - cron: "0 */6 * * *"  # Runs every 6 hours (UTC)
-    - cron: "*/1 * * * *"   # every 1 minute (UTC)  
+    - cron: "0 */6 * * *"  # Runs every 6 hours (UTC)
+    # - cron: "*/1 * * * *"   # every 1 minute (UTC)  
   # Allows manual run from GitHub UI
   workflow_dispatch:
 
