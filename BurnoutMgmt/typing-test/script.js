@@ -23,6 +23,7 @@ let maxCombo = 0;
 let totalTime = 60; // 60 seconds fixed
 
 // DOM Elements
+const mottoModal = document.getElementById('motto-modal');
 const homeScreen = document.getElementById('home-screen');
 const gameScreen = document.getElementById('game-screen');
 const resultsScreen = document.getElementById('results-screen');
@@ -138,6 +139,11 @@ function updateComboUI() {
 // Prevent copy-pasting
 input.addEventListener("paste", (e) => { e.preventDefault(); alert("No hacks allowed, runner!"); });
 input.addEventListener("drop", (e) => { e.preventDefault(); });
+
+// --- MOTTO MODAL ---
+window.closeMotto = function () {
+    mottoModal.classList.add('hidden');
+}
 
 // --- RESULTS & SCORING ---
 
