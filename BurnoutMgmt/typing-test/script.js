@@ -264,10 +264,10 @@ window.selectFocus = function (level) {
 
 
 function validateInputs(data) {
-    // 1. Name (3-20 chars, letters, numbers, underscore)
-    const nameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    // 1. Name (3-50 chars, letters, numbers, underscore, spaces)
+    const nameRegex = /^[a-zA-Z0-9_ ]{3,50}$/;
     if (!nameRegex.test(data.username)) {
-        return "Name must be 3–20 characters.\nAllowed: Letters, Numbers, Underscore (_).\nNo spaces or special characters.";
+        return "Name must be 3–50 characters.\nAllowed: Letters, Numbers, Underscore (_), Spaces.";
     }
 
     // 2. Sleep (0-24, max 1 decimal)
