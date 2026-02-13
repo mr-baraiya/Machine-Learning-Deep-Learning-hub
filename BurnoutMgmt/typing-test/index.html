@@ -27,6 +27,25 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
+        /* Custom Scrollbar for Cyberpunk Theme */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(6, 182, 212, 0.5);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(6, 182, 212, 0.8);
+        }
     </style>
 </head>
 
@@ -126,7 +145,7 @@
             </div>
 
             <div
-                class="mb-4 md:mb-6 bg-slate-900/50 p-4 md:p-6 rounded-lg border border-slate-700/50 relative h-24 md:h-32 overflow-hidden">
+                class="mb-4 md:mb-6 bg-slate-900/50 p-4 md:p-6 rounded-lg border border-slate-700/50 relative h-48 md:h-64 overflow-y-auto custom-scrollbar">
                 <p id="text" class="text-lg md:text-xl leading-relaxed text-slate-400 font-medium select-none"></p>
                 <!-- Text inserted via JS -->
             </div>
@@ -189,43 +208,43 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="block text-xs font-semibold text-slate-500 uppercase flex items-center gap-1">
-                                Operator Name <span class="text-red-500">*</span>
+                                Name <span class="text-red-500">*</span>
                             </label>
                             <input id="username" type="text"
                                 class="w-full bg-slate-800 border-slate-700 rounded text-sm px-3 py-2 text-white focus:border-cyan-500 outline-none"
-                                placeholder="Enter alias...">
-                            <p class="text-[10px] text-slate-600">Identity required for ranking and history tracking.
+                                placeholder="Enter name...">
+                            <p class="text-[10px] text-slate-600">This will be used to track your score and progress.
                             </p>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-xs font-semibold text-slate-500 uppercase flex items-center gap-1">
-                                Sleep (Hrs) <span class="text-red-500">*</span>
+                                Sleep (Hours) <span class="text-red-500">*</span>
                             </label>
                             <input id="sleep" type="number"
                                 class="w-full bg-slate-800 border-slate-700 rounded text-sm px-3 py-2 text-white focus:border-cyan-500 outline-none"
                                 placeholder="e.g. 7.5">
-                            <p class="text-[10px] text-slate-600">Critical for cognitive recovery analysis.</p>
+                            <p class="text-[10px] text-slate-600">How many hours did you sleep last night?</p>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-xs font-semibold text-slate-500 uppercase flex items-center gap-1">
-                                Screen Time (Hrs) <span class="text-red-500">*</span>
+                                Screen Time (Hours) <span class="text-red-500">*</span>
                             </label>
                             <input id="screen" type="number"
                                 class="w-full bg-slate-800 border-slate-700 rounded text-sm px-3 py-2 text-white focus:border-cyan-500 outline-none"
                                 placeholder="e.g. 4">
-                            <p class="text-[10px] text-slate-600">Correlates with digital eye strain & fatigue.</p>
+                            <p class="text-[10px] text-slate-600">How many hours have you used screens today?</p>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-xs font-semibold text-slate-500 uppercase flex items-center gap-1">
-                                Mental Fatigue (1-5) <span class="text-red-500">*</span>
+                                How Tired Do You Feel? (1-5) <span class="text-red-500">*</span>
                             </label>
                             <input id="fatigue" type="number" min="1" max="5"
                                 class="w-full bg-slate-800 border-slate-700 rounded text-sm px-3 py-2 text-white focus:border-cyan-500 outline-none"
-                                placeholder="1 = Fresh, 5 = Exhausted">
-                            <p class="text-[10px] text-slate-600">Subjective calibration for typing metrics.</p>
+                                placeholder="1 to 5">
+                            <p class="text-[10px] text-slate-600">1 = Very fresh, 5 = Very tired</p>
                         </div>
 
                         <div class="space-y-2 col-span-1 md:col-span-2">
@@ -239,7 +258,9 @@
                                 <option value="1">Medium (Alert)</option>
                                 <option value="2">High (Stressed)</option>
                             </select>
-                            <p class="text-[10px] text-slate-600">Current perceived stress state (Ground Truth).</p>
+                            <p class="text-[10px] text-slate-600">How stressed do you feel right now?</p>
+
+
                         </div>
                     </div>
                 </div>
@@ -257,6 +278,35 @@
                         & Continue</button>
                 </div>
             </div>
+
+            <div class="mt-6 text-center border-t border-slate-700 pt-4">
+                <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Contact for Support/Feedback</p>
+                <a href="mailto:baraiyavishalbhai32@gmail.com"
+                    class="text-cyan-600 hover:text-cyan-400 text-sm font-mono transition-colors">
+                    baraiyavishalbhai32@gmail.com
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- CUSTOM ALERT MODAL -->
+    <div id="custom-alert-modal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4">
+        <div
+            class="bg-slate-800 p-6 md:p-8 rounded-xl border border-red-500/50 max-w-sm w-full shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center relative overflow-hidden transform transition-all scale-100">
+            <!-- Decoration -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
+
+            <h3 id="alert-title" class="text-xl font-black text-red-500 mb-4 tracking-widest uppercase">SYSTEM NOTICE
+            </h3>
+
+            <p id="alert-message" class="text-slate-300 mb-8 font-mono text-sm leading-relaxed"></p>
+
+            <button onclick="closeCustomAlert()"
+                class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition-all shadow-lg uppercase tracking-widest text-xs hover:translate-y-[-2px]">
+                ACKNOWLEDGE
+            </button>
         </div>
     </div>
 

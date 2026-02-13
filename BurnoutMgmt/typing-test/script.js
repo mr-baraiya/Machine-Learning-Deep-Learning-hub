@@ -49,29 +49,33 @@ function loadStats() {
 // --- GAME LOOP ---
 
 window.startGame = function () {
-    // UI Transitions
-    homeScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-    resultsScreen.classList.add('hidden');
+    // Show instruction popup first
+    showCustomAlert("MISSION START", "You have 1 minute to type the paragraph above with high accuracy.\n\nGood luck, Operator.", () => {
+        // ACTUAL START LOGIC
+        // UI Transitions
+        homeScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        resultsScreen.classList.add('hidden');
 
-    // Reset Game State
-    input.value = "";
-    input.focus();
-    keyTimes = [];
-    backspaces = 0;
-    pauseCount = 0;
-    combo = 0;
-    maxCombo = 0;
-    lastKeyTime = Date.now();
+        // Reset Game State
+        input.value = "";
+        input.focus();
+        keyTimes = [];
+        backspaces = 0;
+        pauseCount = 0;
+        combo = 0;
+        maxCombo = 0;
+        lastKeyTime = Date.now();
 
-    // Set Text
-    const randomIndex = Math.floor(Math.random() * paragraphs.length);
-    document.getElementById("text").innerText = paragraphs[randomIndex];
+        // Set Text
+        const randomIndex = Math.floor(Math.random() * paragraphs.length);
+        document.getElementById("text").innerText = paragraphs[randomIndex];
 
-    // Start Timer
-    startTime = Date.now();
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(updateGameLoop, 100);
+        // Start Timer
+        startTime = Date.now();
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateGameLoop, 100);
+    });
 }
 
 function updateGameLoop() {
@@ -137,7 +141,10 @@ function updateComboUI() {
 }
 
 // Prevent copy-pasting
-input.addEventListener("paste", (e) => { e.preventDefault(); alert("No hacks allowed, runner!"); });
+input.addEventListener("paste", (e) => {
+    e.preventDefault();
+    showCustomAlert("SECURITY ALERT", "Copy-paste operations are restricted.");
+});
 input.addEventListener("drop", (e) => { e.preventDefault(); });
 
 // --- MOTTO MODAL ---
@@ -217,6 +224,27 @@ window.endTest = function () {
 }
 
 
+// --- CUSTOM ALERT SYSTEM ---
+const customAlertModal = document.getElementById('custom-alert-modal');
+const alertTitle = document.getElementById('alert-title');
+const alertMessage = document.getElementById('alert-message');
+let alertCallback = null;
+
+window.showCustomAlert = function (title, message, callback = null) {
+    alertTitle.innerText = title || "SYSTEM NOTICE";
+    alertMessage.innerText = message;
+    alertCallback = callback;
+    customAlertModal.classList.remove('hidden');
+}
+
+window.closeCustomAlert = function () {
+    customAlertModal.classList.add('hidden');
+    if (alertCallback) {
+        alertCallback();
+        alertCallback = null;
+    }
+}
+
 // --- UTILITIES & SAVING ---
 
 window.selectFocus = function (level) {
@@ -235,6 +263,45 @@ window.selectFocus = function (level) {
 }
 
 
+function validateInputs(data) {
+    // 1. Name (3-20 chars, letters, numbers, underscore)
+    const nameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    if (!nameRegex.test(data.username)) {
+        return "Name must be 3–20 characters.\nAllowed: Letters, Numbers, Underscore (_).\nNo spaces or special characters.";
+    }
+
+    // 2. Sleep (0-24, max 1 decimal)
+    const sleep = parseFloat(data.sleep);
+    if (isNaN(sleep) || sleep < 0 || sleep > 24) {
+        return "Sleep must be between 0 and 24 hours.";
+    }
+    if (!/^\d+(\.\d{1})?$/.test(data.sleep)) {
+        return "Sleep: Enter valid number (e.g., 7.5).";
+    }
+
+    // 3. Screen Time (0-24, max 2 decimals)
+    const screen = parseFloat(data.screenTime);
+    if (isNaN(screen) || screen < 0 || screen > 24) {
+        return "Screen Time must be between 0 and 24 hours.";
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(data.screenTime)) {
+        return "Screen Time: Max 2 decimal places allowed.";
+    }
+
+    // 4. Tiredness (1-5 integer)
+    const fatigue = parseFloat(data.fatigue);
+    if (!Number.isInteger(fatigue) || fatigue < 1 || fatigue > 5) {
+        return "Tiredness Level must be 1 to 5.";
+    }
+
+    // 5. Stress Level (Required)
+    if (!["0", "1", "2"].includes(data.stress)) {
+        return "Please select your Stress Level.";
+    }
+
+    return null; // No errors
+}
+
 window.saveAndReset = function () {
     const data = window.lastData;
 
@@ -247,8 +314,12 @@ window.saveAndReset = function () {
     const username = document.getElementById('username').value;
 
     // VALIDATION
-    if (!username || !sleep || !screenTime || !fatigue || !stress) {
-        alert("⚠️ ACCESS DENIED: Missing Required Mission Data.\n\nPlease fill in all fields (Name, Sleep, Screen Time, Fatigue, Stress Level) to proceed.");
+    const validationError = validateInputs({
+        username, sleep, screenTime, fatigue, stress
+    });
+
+    if (validationError) {
+        showCustomAlert("INVALID DATA", validationError);
         return;
     }
 
@@ -371,16 +442,18 @@ function sendToGoogleSheet(data) {
             body: JSON.stringify(data)
         })
             .then(() => {
-                alert("Mission Data Uploaded!");
-                location.reload(); // Reset to home
+                showCustomAlert("UPLOAD COMPLETE", "Mission Data Uploaded Successfully!", () => {
+                    location.reload(); // Reset to home
+                });
             })
             .catch(err => {
                 console.error(err);
-                alert("Upload Failed. Check console.");
+                showCustomAlert("UPLOAD ERROR", "Connection failed. Check console logs.");
             });
     } else {
-        alert("Simulation Complete (No cloud connection).");
-        location.reload();
+        showCustomAlert("SIMULATION COMPLETE", "Data logged locally (No cloud connection).", () => {
+            location.reload();
+        });
     }
 }
 
