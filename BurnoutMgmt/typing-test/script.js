@@ -48,33 +48,62 @@ function loadStats() {
 
 // --- GAME LOOP ---
 
+// --- COUNTDOWN LOGIC ---
+const countdownOverlay = document.getElementById('countdown-overlay');
+const countdownText = document.getElementById('countdown-text');
+
+function startCountdown(onComplete) {
+    let count = 3;
+    countdownOverlay.classList.remove('hidden');
+    countdownText.innerText = count;
+
+    const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownText.innerText = count;
+        } else if (count === 0) {
+            countdownText.innerText = "GO!";
+        } else {
+            clearInterval(interval);
+            countdownOverlay.classList.add('hidden');
+            if (onComplete) onComplete();
+        }
+    }, 1000);
+}
+
 window.startGame = function () {
     // Show instruction popup first
     showCustomAlert("MISSION START", "You have 1 minute to type the paragraph above with high accuracy.\n\nGood luck, Operator.", () => {
-        // ACTUAL START LOGIC
-        // UI Transitions
+        
+        // Hide Home Screen initially
         homeScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        resultsScreen.classList.add('hidden');
+        
+        // Start Countdown
+        startCountdown(() => {
+            // ACTUAL START LOGIC
+            // UI Transitions
+            gameScreen.classList.remove('hidden');
+            resultsScreen.classList.add('hidden');
 
-        // Reset Game State
-        input.value = "";
-        input.focus();
-        keyTimes = [];
-        backspaces = 0;
-        pauseCount = 0;
-        combo = 0;
-        maxCombo = 0;
-        lastKeyTime = Date.now();
+            // Reset Game State
+            input.value = "";
+            input.focus();
+            keyTimes = [];
+            backspaces = 0;
+            pauseCount = 0;
+            combo = 0;
+            maxCombo = 0;
+            lastKeyTime = Date.now();
 
-        // Set Text
-        const randomIndex = Math.floor(Math.random() * paragraphs.length);
-        document.getElementById("text").innerText = paragraphs[randomIndex];
+            // Set Text
+            const randomIndex = Math.floor(Math.random() * paragraphs.length);
+            document.getElementById("text").innerText = paragraphs[randomIndex];
 
-        // Start Timer
-        startTime = Date.now();
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(updateGameLoop, 100);
+            // Start Timer
+            startTime = Date.now();
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateGameLoop, 100);
+        });
     });
 }
 
