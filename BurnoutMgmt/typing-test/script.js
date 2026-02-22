@@ -1,3 +1,106 @@
+// --- AUDIO MANAGER (Web Audio API) ---
+class AudioManager {
+    constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('focus_sound_muted') === 'true';
+    }
+
+    _ensureCtx() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    _play(freq, type, duration, vol = 0.15, ramp = true) {
+        if (this.muted) return;
+        this._ensureCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        if (ramp) {
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        }
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    playTyping() {
+        // Short, crisp high-pitched click
+        this._play(1800 + Math.random() * 400, 'square', 0.04, 0.06);
+    }
+
+    playError() {
+        // Low buzz for backspace / error
+        this._play(200, 'sawtooth', 0.12, 0.1);
+    }
+
+    playCountdownTick() {
+        // Medium beep for 3, 2, 1
+        this._play(880, 'sine', 0.15, 0.2);
+    }
+
+    playCountdownGo() {
+        // Rising two-tone for "GO!"
+        if (this.muted) return;
+        this._ensureCtx();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, now);
+        osc.frequency.linearRampToValueAtTime(1320, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.35);
+    }
+
+    playCombo() {
+        // Bright ascending arpeggio for combo milestones
+        if (this.muted) return;
+        this._ensureCtx();
+        const notes = [523, 659, 784]; // C5, E5, G5
+        notes.forEach((freq, i) => {
+            setTimeout(() => this._play(freq, 'sine', 0.12, 0.12), i * 60);
+        });
+    }
+
+    playSuccess() {
+        // Triumphant 4-note chime for mission complete
+        if (this.muted) return;
+        this._ensureCtx();
+        const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+            setTimeout(() => this._play(freq, 'sine', 0.25, 0.18), i * 120);
+        });
+    }
+
+    playAlert() {
+        // Two-tone warning beep
+        if (this.muted) return;
+        this._ensureCtx();
+        this._play(440, 'square', 0.1, 0.12);
+        setTimeout(() => this._play(330, 'square', 0.15, 0.12), 120);
+    }
+
+    toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('focus_sound_muted', this.muted);
+        return this.muted;
+    }
+}
+
+const audioManager = new AudioManager();
+
 const paragraphs = [
     "The concept of artificial intelligence has been around for centuries, but it wasn't until the 1950s that the field was formally founded. Early AI research focused on symbolic methods and problem-solving, with high hopes for creating machines that could think like humans. Over the decades, AI has experienced several 'winters' of reduced funding and interest, followed by resurgences driven by new techniques and increased computing power.",
     "Climate change is one of the most pressing issues facing our planet today. Rising global temperatures are leading to more frequent and severe weather events, melting ice caps, and rising sea levels. Scientists agree that human activities, particularly the burning of fossil fuels and deforestation, are the primary drivers of this warming trend. Urgent action is needed to reduce greenhouse gas emissions and transition to renewable energy sources.",
@@ -32,6 +135,24 @@ const input = document.getElementById("input");
 // --- INITIALIZATION ---
 function init() {
     loadStats();
+    updateSoundIcon();
+}
+
+// --- SOUND TOGGLE ---
+window.toggleSound = function () {
+    const isMuted = audioManager.toggleMute();
+    updateSoundIcon();
+    if (!isMuted) {
+        audioManager.playCountdownTick(); // Quick feedback sound
+    }
+}
+
+function updateSoundIcon() {
+    const btn = document.getElementById('sound-toggle');
+    if (btn) {
+        btn.innerText = audioManager.muted ? '🔇' : '🔊';
+        btn.title = audioManager.muted ? 'Unmute Sound' : 'Mute Sound';
+    }
 }
 
 function loadStats() {
@@ -56,13 +177,16 @@ function startCountdown(onComplete) {
     let count = 3;
     countdownOverlay.classList.remove('hidden');
     countdownText.innerText = count;
+    audioManager.playCountdownTick();
 
     const interval = setInterval(() => {
         count--;
         if (count > 0) {
             countdownText.innerText = count;
+            audioManager.playCountdownTick();
         } else if (count === 0) {
             countdownText.innerText = "GO!";
+            audioManager.playCountdownGo();
         } else {
             clearInterval(interval);
             countdownOverlay.classList.add('hidden');
@@ -74,10 +198,10 @@ function startCountdown(onComplete) {
 window.startGame = function () {
     // Show instruction popup first
     showCustomAlert("MISSION START", "You have 1 minute to type the paragraph above with high accuracy.\n\nGood luck, Operator.", () => {
-        
+
         // Hide Home Screen initially
         homeScreen.classList.add('hidden');
-        
+
         // Start Countdown
         startCountdown(() => {
             // ACTUAL START LOGIC
@@ -152,10 +276,12 @@ input.addEventListener("keydown", (e) => {
     if (e.key === "Backspace") {
         backspaces++;
         combo = 0; // Reset combo on error
+        audioManager.playError();
         updateComboUI();
     } else if (e.key.length === 1) { // Normal character
         combo++;
         if (combo > maxCombo) maxCombo = combo;
+        audioManager.playTyping();
         updateComboUI();
     }
 });
@@ -167,6 +293,11 @@ function updateComboUI() {
     // Visual feedback for high combo
     if (combo > 10) comboEl.classList.add('text-purple-400');
     else comboEl.classList.remove('text-purple-400');
+
+    // Sound feedback for combo milestones (every 10x)
+    if (combo > 0 && combo % 10 === 0) {
+        audioManager.playCombo();
+    }
 }
 
 // Prevent copy-pasting
@@ -185,6 +316,7 @@ window.closeMotto = function () {
 
 window.endTest = function () {
     clearInterval(timerInterval);
+    audioManager.playSuccess();
 
     // Calculate Metrics
     const endTime = Date.now();
@@ -264,6 +396,7 @@ window.showCustomAlert = function (title, message, callback = null) {
     alertMessage.innerText = message;
     alertCallback = callback;
     customAlertModal.classList.remove('hidden');
+    audioManager.playAlert();
 }
 
 window.closeCustomAlert = function () {
