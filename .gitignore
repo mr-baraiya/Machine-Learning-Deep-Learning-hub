@@ -54,3 +54,5 @@ Cardio_Project/models/
 Cardio_Project/fastapi_app/models/
 Cardio_Project/frontend/.env
 Cardio_Project/fastapi_app/.env
+
+data
